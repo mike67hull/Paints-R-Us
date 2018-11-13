@@ -1,0 +1,43 @@
+from tkinter import *
+import sqlite3
+
+connection = sqlite3.connect('PaintsRUs.db')
+cursor = connection.cursor()
+
+#cursor.execute('CREATE TABLE Employee (Id INTEGER PRIMARY KEY, Name TEXT, Password TEXT)')
+cursor.execute('CREATE Row Employee (Id INTEGER PRIMARY KEY, Name TEXT, Password TEXT)')
+
+class PaintsMain:
+
+    def __init__(self, master):
+
+        def submit(event):
+            text = str(username.get())
+            print(text)
+
+        frame = Frame(master, width = 300, height = 200)
+        frame.pack()
+
+        nameLabel = Label(frame, text="Username")
+        passLabel = Label(frame, text="Password")
+        username = StringVar()
+        nameEntry = Entry(frame, textvariable=username)
+        passEntry = Entry(frame)
+
+        nameLabel.grid(row=0, sticky=E)
+        passLabel.grid(row=1, sticky=E)
+        nameEntry.grid(row=0, column=1)
+        passEntry.grid(row=1, column=1)
+
+        submitButton = Button(frame, text="Submit")#, command=self.login)
+        submitButton.bind("<Button-1>", submit)
+        submitButton.grid(columnspan=2)
+
+
+
+
+
+
+root = Tk()
+b = PaintsMain(root)
+root.mainloop()
