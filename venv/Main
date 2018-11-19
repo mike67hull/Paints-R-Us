@@ -37,12 +37,13 @@ class PaintsMain:
                 tkinter.messagebox.showerror('Sign In Error', 'Incorrect Username or Password, Please try again')
             else:#If user found, the login frame is removeed and the main frame is loaded
                 if(usernameValue == "Admin"):
+                    time.sleep(.3)
                     loginFrame.destroy()
-                    PaintsMain.managerScreen(master)
+                    PaintsMain.managerScreen(master, usernameValue)
                 else:
                     time.sleep(.3) #"Loading delay" of .3 seconds to slow transition
                     loginFrame.destroy()
-                    PaintsMain.employeeScreen(master, usernameValue)
+                    PaintsMain.managerScreen(master, usernameValue)
 
 
         #Login frame build
@@ -77,15 +78,29 @@ class PaintsMain:
     def employeeScreen(master, who):
         employeeFrame = Frame(master, width=300, height=200)
         employeeFrame.pack()
-        testLabel = Label(employeeFrame, text="Welcome " + str(who) + "!")
+        testLabel = Label(employeeFrame, text="What would you like to do " + str(who) + "?")
         testLabel.pack()
 
     #Main Screen for Managers
-    def managerScreen(master):
+    def managerScreen(master, who):
         managerFrame = Frame(master, width=300, height=200)
         managerFrame.pack()
-        testLabel = Label(managerFrame, text="Welcome Manager")
-        testLabel.pack()
+        managerFrame.pack_propagate(0)
+        questionLabel = Label(managerFrame, text="What would you like to do " + str(who) + "?")
+        menuButton = Menubutton(managerFrame, text = "Choose a Screen")
+        menuButton.menu = Menu(menuButton)
+        menuButton["menu"] = menuButton.menu
+
+        menuButton.menu.add_command(label="Customer Screen")
+        menuButton.menu.add_command(label="Order Screen")
+        if(who == "Admin"):
+            menuButton.menu.add_command(label="Query Screen")
+
+        questionLabel.pack()
+        menuButton.pack()
+
+
+
 
 #Creating window and calling PaintsMain class which initialized login window
 root = Tk()
