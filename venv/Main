@@ -1,4 +1,5 @@
 from tkinter import *
+import tkinter as tk
 import tkinter.messagebox
 import sqlite3
 import time
@@ -7,10 +8,11 @@ import time
 connection = sqlite3.connect('PaintsRUs.db')
 cursor = connection.cursor()
 
-#Initially creating the database
+#Initially creating the database && ADDITIONS TO PaintsRUs.db
 #cursor.execute('CREATE TABLE Employee (Id INTEGER PRIMARY KEY, Name TEXT, Password TEXT)')
 #Inserts new row into Employee table
 #cursor.execute('INSERT INTO Employee (Name, Password) VALUES ("Mike", "Hull")')
+#cursor.execute('INSERT INTO Employee (Name, Password) VALUES ("Admin", "1234")')
 #Selecting all values from the table
 #cursor.execute('SELECT * FROM EMPLOYEE')
 #Finalizes all changes made to the database permanently
@@ -26,47 +28,69 @@ class PaintsMain:
     def __init__(self, master):
         #When submit button is clicked, Username and Password values are retrieved from 'PaintsRUs.db' to see if they exist
         def submit(event):
+            time.sleep(.1)
             usernameValue = str(username.get())
             passwordValue = str(password.get())
             cursor.execute('SELECT 1 FROM EMPLOYEE WHERE Name = "' + usernameValue + '" AND Password = "' + passwordValue + '"')
-            result = str(cursor.fetchall())
-            if(result == '[]'):#If user not found, error window appears
-                tkinter.messagebox.showerror('Window Title', 'Incorrect Username or Password, Please try again\n (Case Sensitive)buk')
+            result = cursor.fetchall()
+            if(str(result) == '[]'):#If user not found, error window appears
+                tkinter.messagebox.showerror('Sign In Error', 'Incorrect Username or Password, Please try again')
             else:#If user found, the login frame is removeed and the main frame is loaded
-                time.sleep(.3) #"Loading delay" of .3 seconds to slow transition
-                frame.destroy()
-                PaintsMain.mainScreen(master, usernameValue)
+                if(usernameValue == "Admin"):
+                    loginFrame.destroy()
+                    PaintsMain.managerScreen(master)
+                else:
+                    time.sleep(.3) #"Loading delay" of .3 seconds to slow transition
+                    loginFrame.destroy()
+                    PaintsMain.employeeScreen(master, usernameValue)
 
 
         #Login frame build
-        frame = Frame(master, width = 300, height = 200)
-        frame.pack()
+        loginFrame = Frame(master, width = 300, height = 200)
+        loginFrame.pack()
 
-        self.nameLabel = Label(frame, text="Username")
-        self.passLabel = Label(frame, text="Password")
+        #Don't allow the widgets inside to determine the frame's width / height
+        loginFrame.pack_propagate(0)
+        #frame.pack(fill=tk.BOTH, expand=1) #and expand frame to size
+
+        #Creating all values for frame
+        signLabel = Label(loginFrame, text="Please Sign In")
+        nameLabel = Label(loginFrame, text="Username")
+        passLabel = Label(loginFrame, text="Password")
         username = StringVar()
-        self.nameEntry = Entry(frame, textvariable = username)
+        nameEntry = Entry(loginFrame, textvariable = username)
         password = StringVar()
-        self.passEntry = Entry(frame, textvariable = password)
-        self.passEntry.config(show="*");
+        passEntry = Entry(loginFrame, textvariable = password)
+        passEntry.config(show="*");
+        loginButton = Button(loginFrame, text="Login")
+        loginButton.bind("<Button-1>", submit)
 
-        self.nameLabel.grid(row=0, sticky=E)
-        self.passLabel.grid(row=1, sticky=E)
-        self.nameEntry.grid(row=0, column=1)
-        self.passEntry.grid(row=1, column=1)
+        #Attaching all values onto frame grid
+        signLabel.grid(columnspan = 2)
+        nameLabel.grid(row=1, sticky=E)
+        passLabel.grid(row=2, sticky=E)
+        nameEntry.grid(row=1, column=1)
+        passEntry.grid(row=2, column=1)
+        loginButton.grid(columnspan = 2)
 
-        self.loginButton = Button(frame, text = "Login")
-        self.loginButton.bind("<Button-1>", submit)
-        self.loginButton.grid(columnspan = 2)
-
-
-    #Main Screen
-    def mainScreen(master, who):
-        frame1 = Frame(master, width=300, height=200)
-        frame1.pack()
-        testLabel = Label(frame1, text="Welcome " + str(who) + "!")
+    #Main Screen for Employees
+    def employeeScreen(master, who):
+        employeeFrame = Frame(master, width=300, height=200)
+        employeeFrame.pack()
+        testLabel = Label(employeeFrame, text="Welcome " + str(who) + "!")
         testLabel.pack()
 
+    #Main Screen for Managers
+    def managerScreen(master):
+        managerFrame = Frame(master, width=300, height=200)
+        managerFrame.pack()
+        testLabel = Label(managerFrame, text="Welcome Manager")
+        testLabel.pack()
+
+#Creating window and calling PaintsMain class which initialized login window
 root = Tk()
+root.title('Paints R Us')
+root.geometry("300x200")
+root.resizable(0, 0)
 b = PaintsMain(root)
 root.mainloop()
