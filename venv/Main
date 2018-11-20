@@ -36,15 +36,9 @@ class PaintsMain:
             if(str(result) == '[]'):#If user not found, error window appears
                 tkinter.messagebox.showerror('Sign In Error', 'Incorrect Username or Password, Please try again')
             else:#If user found, the login frame is removeed and the main frame is loaded
-                if(usernameValue == "Admin"):
-                    time.sleep(.3)
-                    loginFrame.destroy()
-                    PaintsMain.managerScreen(master, usernameValue)
-                else:
-                    time.sleep(.3) #"Loading delay" of .3 seconds to slow transition
-                    loginFrame.destroy()
-                    PaintsMain.managerScreen(master, usernameValue)
-
+                time.sleep(.3)
+                loginFrame.destroy()
+                PaintsMain.menuScreen(master, usernameValue)
 
         #Login frame build
         loginFrame = Frame(master, width = 300, height = 200)
@@ -52,7 +46,6 @@ class PaintsMain:
 
         #Don't allow the widgets inside to determine the frame's width / height
         loginFrame.pack_propagate(0)
-        #frame.pack(fill=tk.BOTH, expand=1) #and expand frame to size
 
         #Creating all values for frame
         signLabel = Label(loginFrame, text="Please Sign In")
@@ -74,32 +67,27 @@ class PaintsMain:
         passEntry.grid(row=2, column=1)
         loginButton.grid(columnspan = 2)
 
-    #Main Screen for Employees
-    def employeeScreen(master, who):
-        employeeFrame = Frame(master, width=300, height=200)
-        employeeFrame.pack()
-        testLabel = Label(employeeFrame, text="What would you like to do " + str(who) + "?")
-        testLabel.pack()
-
-    #Main Screen for Managers
-    def managerScreen(master, who):
-        managerFrame = Frame(master, width=300, height=200)
-        managerFrame.pack()
-        managerFrame.pack_propagate(0)
-        questionLabel = Label(managerFrame, text="What would you like to do " + str(who) + "?")
-        menuButton = Menubutton(managerFrame, text = "Choose a Screen")
-        menuButton.menu = Menu(menuButton)
-        menuButton["menu"] = menuButton.menu
-
-        menuButton.menu.add_command(label="Customer Screen")
-        menuButton.menu.add_command(label="Order Screen")
+    #Main menu Screen for employees
+    def menuScreen(master, who):
+        def changeAnswer():
+            answerInfo = "Lookup A customer"
+        menuFrame = Frame(master, width=300, height=200)
+        menuFrame.pack()
+        menuFrame.pack_propagate(0)
+        questionLabel = Label(menuFrame, text="What would you like to do " + str(who) + "?")
+        menuList = Listbox(menuFrame)
+        menuList.insert(1, 'Lookup Customer')
+        menuList.insert(2, 'Add New Customer')
+        menuList.insert(3, 'Lookup Invoice')
+        menuList.insert(4, 'Create New Order')
         if(who == "Admin"):
-            menuButton.menu.add_command(label="Query Screen")
+            menuList.insert(5, 'Generate Report')
+            menuList.insert(6, 'Create Custom Query')
 
-        questionLabel.pack()
-        menuButton.pack()
-
-
+        answerLabel = Label(menuFrame, text="Hello")
+        questionLabel.grid(columnspan = 2)
+        menuList.grid(row=1, column=0)
+        answerLabel.grid(row=1, column=1)
 
 
 #Creating window and calling PaintsMain class which initialized login window
