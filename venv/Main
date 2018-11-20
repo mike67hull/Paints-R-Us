@@ -23,9 +23,9 @@ cursor = connection.cursor()
 #Main class/UI for software
 class PaintsMain:
 
-
-    #Login Screen
+    #Generates main login Screen when program starts
     def __init__(self, master):
+
         #When submit button is clicked, Username and Password values are retrieved from 'PaintsRUs.db' to see if they exist
         def submit(event):
             time.sleep(.1)
@@ -41,41 +41,48 @@ class PaintsMain:
                 PaintsMain.menuScreen(master, usernameValue)
 
         #Login frame build
-        loginFrame = Frame(master, width = 300, height = 200)
+        loginFrame = Frame(master, width = 300, height = 200, bg="gray")
         loginFrame.pack()
 
         #Don't allow the widgets inside to determine the frame's width / height
         loginFrame.pack_propagate(0)
 
         #Creating all values for frame
-        signLabel = Label(loginFrame, text="Please Sign In")
-        nameLabel = Label(loginFrame, text="Username")
-        passLabel = Label(loginFrame, text="Password")
+        signLabel = Label(loginFrame, text="Welcome to Paints-R-Us, Please Sign In!", bg="gray")
+        nameLabel = Label(loginFrame, text="Username", bg="gray")
+        passLabel = Label(loginFrame, text="Password", bg="gray")
         username = StringVar()
-        nameEntry = Entry(loginFrame, textvariable = username)
+        nameEntry = Entry(loginFrame, textvariable = username, bg="darkgray")
         password = StringVar()
-        passEntry = Entry(loginFrame, textvariable = password)
+        passEntry = Entry(loginFrame, textvariable = password, bg="darkgray")
         passEntry.config(show="*");
         loginButton = Button(loginFrame, text="Login")
         loginButton.bind("<Button-1>", submit)
 
         #Attaching all values onto frame grid
-        signLabel.grid(columnspan = 2)
+        signLabel.grid(row=0, columnspan = 2, pady=10)
         nameLabel.grid(row=1, sticky=E)
         passLabel.grid(row=2, sticky=E)
         nameEntry.grid(row=1, column=1)
         passEntry.grid(row=2, column=1)
-        loginButton.grid(columnspan = 2)
+        loginButton.grid(row=3, columnspan = 2, pady=10)
 
     #Main menu Screen for employees
     def menuScreen(master, who):
-        def changeAnswer():
-            answerInfo = "Lookup A customer"
-        menuFrame = Frame(master, width=300, height=200)
+
+        #When button is pressed, takes the value from the listbox and goes to the appropriate screen
+        def goToPage(event):
+            currentGo = menuList.get(menuList.curselection())
+            if(str(currentGo)=="Lookup Customer"):
+                time.sleep(.3)
+                menuFrame.destroy()
+                PaintsMain.customerLookupScreen(master, who)
+
+        menuFrame = Frame(master, width=300, height=200, bg="gray")
         menuFrame.pack()
         menuFrame.pack_propagate(0)
-        questionLabel = Label(menuFrame, text="What would you like to do " + str(who) + "?")
-        menuList = Listbox(menuFrame)
+        questionLabel = Label(menuFrame, text="What would you like to do " + str(who) + "?", bg="gray")
+        menuList = Listbox(menuFrame, bg="darkgray")
         menuList.insert(1, 'Lookup Customer')
         menuList.insert(2, 'Add New Customer')
         menuList.insert(3, 'Lookup Invoice')
@@ -84,16 +91,50 @@ class PaintsMain:
             menuList.insert(5, 'Generate Report')
             menuList.insert(6, 'Create Custom Query')
 
-        answerLabel = Label(menuFrame, text="Hello")
+        goButton = Button(menuFrame, text="Go To Screen")
+        goButton.bind("<Button-1>", goToPage)
         questionLabel.grid(columnspan = 2)
-        menuList.grid(row=1, column=0)
-        answerLabel.grid(row=1, column=1)
+        menuList.grid(rowspan=2, sticky=W)
+        goButton.grid(row=2, column=1, padx=10, sticky=S)
 
+    #Lookup customers Screen for employees
+    def customerLookupScreen(master, who):
+
+        def searchCustomer(event):
+            print("Not found")
+
+        customerLookupFrame = Frame(master, width=300, height=200, bg="gray")
+        customerLookupFrame.pack()
+        customerLookupFrame.pack_propagate(0)
+        lookupLabel = Label(customerLookupFrame, text="Lookup a customer by ID or by first and last name:", bg="gray")
+        idLabel = Label(customerLookupFrame, text="Customer ID:", bg="gray")
+        customerID = StringVar()
+        idEntry = Entry(customerLookupFrame, textvariable=customerID, bg="darkgray")
+        orLabel = Label(customerLookupFrame, text="-Or-", bg="gray")
+        firstNameLabel = Label(customerLookupFrame, text="First Name:", bg="gray")
+        lastNameLabel = Label(customerLookupFrame, text="Last Name:", bg="gray")
+        firstName = StringVar()
+        firstNameEntry = Entry(customerLookupFrame, textvariable=firstName, bg="darkgray")
+        lastName = StringVar()
+        lastNameEntry = Entry(customerLookupFrame, textvariable=lastName, bg="darkgray")
+        searchButton = Button(customerLookupFrame, text="Search")
+        searchButton.bind("<Button-1>", searchCustomer)
+
+        lookupLabel.grid(row=0,columnspan=2, pady=10)
+        idLabel.grid(row=1, sticky=E)
+        idEntry.grid(row=1, column=1)
+        orLabel.grid(row=2, columnspan=2, padx=10, pady=10)
+        firstNameLabel.grid(row=3, sticky=E)
+        lastNameLabel.grid(row=4, sticky=E)
+        firstNameEntry.grid(row=3, column=1)
+        lastNameEntry.grid(row=4, column=1)
+        searchButton.grid(row=5, columnspan=2, pady=10)
 
 #Creating window and calling PaintsMain class which initialized login window
 root = Tk()
 root.title('Paints R Us')
 root.geometry("300x200")
-root.resizable(0, 0)
+#root.resizable(0, 0)
+root.config(background="gray")
 b = PaintsMain(root)
 root.mainloop()
