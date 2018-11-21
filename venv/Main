@@ -15,6 +15,9 @@ cursor = connection.cursor()
 #cursor.execute('INSERT INTO Employee (Name, Password) VALUES ("Admin", "1234")')
 #Selecting all values from the table
 #cursor.execute('SELECT * FROM EMPLOYEE')
+#cursor.execute('CREATE TABLE Customer (Id INTEGER PRIMARY KEY, First_Name TEXT, Last_Name TEXT)')
+#cursor.execute('INSERT INTO Customer (First_Name, Last_Name) VALUES ("Tom", "Hull")')
+#cursor.execute('INSERT INTO Customer (First_Name, Last_Name) VALUES ("Tom", "Hull")')
 #Finalizes all changes made to the database permanently
 #connection.commit()
 #How to print retrieved info
@@ -31,7 +34,7 @@ class PaintsMain:
             time.sleep(.1)
             usernameValue = str(username.get())
             passwordValue = str(password.get())
-            cursor.execute('SELECT 1 FROM EMPLOYEE WHERE Name = "' + usernameValue + '" AND Password = "' + passwordValue + '"')
+            cursor.execute('SELECT * FROM EMPLOYEE WHERE Name = "' + usernameValue + '" AND Password = "' + passwordValue + '"')
             result = cursor.fetchall()
             if(str(result) == '[]'):#If user not found, error window appears
                 tkinter.messagebox.showerror('Sign In Error', 'Incorrect Username or Password, Please try again')
@@ -77,12 +80,16 @@ class PaintsMain:
                 time.sleep(.3)
                 menuFrame.destroy()
                 PaintsMain.customerLookupScreen(master, who)
+            elif (str(currentGo) == "Add New Customer"):
+                time.sleep(.3)
+                menuFrame.destroy()
+                PaintsMain.newCustomerScreen(master, who)
 
         menuFrame = Frame(master, width=300, height=200, bg="gray")
         menuFrame.pack()
         menuFrame.pack_propagate(0)
         questionLabel = Label(menuFrame, text="What would you like to do " + str(who) + "?", bg="gray")
-        menuList = Listbox(menuFrame, bg="darkgray")
+        menuList = Listbox(menuFrame, height=7, bg="darkgray")
         menuList.insert(1, 'Lookup Customer')
         menuList.insert(2, 'Add New Customer')
         menuList.insert(3, 'Lookup Invoice')
@@ -90,6 +97,7 @@ class PaintsMain:
         if(who == "Admin"):
             menuList.insert(5, 'Generate Report')
             menuList.insert(6, 'Create Custom Query')
+            menuList.insert(7, 'Create New Employee')
 
         goButton = Button(menuFrame, text="Go To Screen")
         goButton.bind("<Button-1>", goToPage)
@@ -101,7 +109,23 @@ class PaintsMain:
     def customerLookupScreen(master, who):
 
         def searchCustomer(event):
-            print("Not found")
+            idValue = str(customerID.get())
+            firstNameValue = str(firstName.get())
+            lastNameValue = str(lastName.get())
+            if (idValue == "" and (firstNameValue == "" or lastNameValue == "")):
+                tkinter.messagebox.showerror('Blank Field(s) Error', 'Attention, You must fill the required fields!')
+            else:
+                if(idValue != ""):
+                    cursor.execute('SELECT * FROM Customer WHERE Id = "' + idValue + '"')# + '" AND Password = "' + passwordValue + '"')
+                    idResult = cursor.fetchall()
+                    if(str(idResult) == "[]"):
+                        tkinter.messagebox.showerror('Incorrect ID','Attention, The ID you\'ve entered was not found!')
+                    else:
+                        (print(str(idResult)))
+                else:
+                    cursor.execute('SELECT * FROM Customer WHERE First_Name = "' + firstNameValue + '" AND Last_Name = "' + lastNameValue + '"')
+                    nameResult = cursor.fetchall()
+                    print(str(nameResult[1]))
 
         customerLookupFrame = Frame(master, width=300, height=200, bg="gray")
         customerLookupFrame.pack()
@@ -129,6 +153,14 @@ class PaintsMain:
         firstNameEntry.grid(row=3, column=1)
         lastNameEntry.grid(row=4, column=1)
         searchButton.grid(row=5, columnspan=2, pady=10)
+
+    # Lookup customers Screen for employees
+    def newCustomerScreen(master, who):
+        newCustomerFrame = Frame(master, width=300, height=200, bg="gray")
+        newCustomerFrame.pack()
+        newCustomerFrame.pack_propagate(0)
+        newCustomerLabel = Label(newCustomerFrame, text="Enter credentials for new customer:", bg="gray")
+        newCustomerLabel.pack()
 
 #Creating window and calling PaintsMain class which initialized login window
 root = Tk()
