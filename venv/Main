@@ -43,14 +43,10 @@ class PaintsMain:
                 loginFrame.destroy()
                 PaintsMain.menuScreen(master, usernameValue)
 
-        #Login frame build
+        # Building loginScreen Components
         loginFrame = Frame(master, width = 300, height = 200, bg="gray")
         loginFrame.pack()
-
-        #Don't allow the widgets inside to determine the frame's width / height
         loginFrame.pack_propagate(0)
-
-        #Creating all values for frame
         signLabel = Label(loginFrame, text="Welcome to Paints-R-Us, Please Sign In!", bg="gray")
         nameLabel = Label(loginFrame, text="Username", bg="gray")
         passLabel = Label(loginFrame, text="Password", bg="gray")
@@ -61,8 +57,6 @@ class PaintsMain:
         passEntry.config(show="*");
         loginButton = Button(loginFrame, text="Login")
         loginButton.bind("<Button-1>", submit)
-
-        #Attaching all values onto frame grid
         signLabel.grid(row=0, columnspan = 2, pady=10)
         nameLabel.grid(row=1, sticky=E)
         passLabel.grid(row=2, sticky=E)
@@ -84,13 +78,13 @@ class PaintsMain:
                 time.sleep(.3)
                 menuFrame.destroy()
                 PaintsMain.newCustomerScreen(master, who)
-
         def size():
             if(who=="a"):
                 return 7
             else:
                 return 4
 
+        # Building menuScreen Components
         menuFrame = Frame(master, width=300, height=200, bg="gray")
         menuFrame.pack()
         menuFrame.pack_propagate(0)
@@ -104,7 +98,6 @@ class PaintsMain:
             menuList.insert(5, 'Generate Report')
             menuList.insert(6, 'Create Custom Query')
             menuList.insert(7, 'Create New Employee')
-
         goButton = Button(menuFrame, text="Go To Screen")
         goButton.bind("<Button-1>", goToPage)
         questionLabel.grid(columnspan = 2)
@@ -133,6 +126,7 @@ class PaintsMain:
                     nameResult = cursor.fetchall()
                     print(str(nameResult))
 
+        #Building customerLookupScreen Components
         customerLookupFrame = Frame(master, width=300, height=200, bg="gray")
         customerLookupFrame.pack()
         customerLookupFrame.pack_propagate(0)
@@ -149,7 +143,6 @@ class PaintsMain:
         lastNameEntry = Entry(customerLookupFrame, textvariable=lastName, bg="darkgray")
         searchButton = Button(customerLookupFrame, text="Search")
         searchButton.bind("<Button-1>", searchCustomer)
-
         lookupLabel.grid(row=0,columnspan=2, pady=10)
         idLabel.grid(row=1, sticky=E)
         idEntry.grid(row=1, column=1)
@@ -169,26 +162,45 @@ class PaintsMain:
             if (newFirstNameValue == "" or newLastNameValue == ""):
                 tkinter.messagebox.showerror('Blank Field(s) Error', 'Attention, You must fill the required fields!')
 
+        #Building newCustomerScreen Components
         newCustomerFrame = Frame(master, width=300, height=200, bg="gray")
         newCustomerFrame.pack()
         newCustomerFrame.pack_propagate(0)
         newCustomerLabel = Label(newCustomerFrame, text="Enter credentials for the new customer:", bg="gray")
-
         newFirstNameLabel = Label(newCustomerFrame, text="First Name:", bg="gray")
         newLastNameLabel = Label(newCustomerFrame, text="Last Name:", bg="gray")
         newFirstName = StringVar()
         newFirstNameEntry = Entry(newCustomerFrame, textvariable=newFirstName, bg="darkgray")
         newLastName = StringVar()
         newLastNameEntry = Entry(newCustomerFrame, textvariable=newLastName, bg="darkgray")
+        newStreetLabel = Label(newCustomerFrame, text="Street:", bg="gray")
+        newCityLabel = Label(newCustomerFrame, text="City:", bg="gray")
+        newStreet = StringVar()
+        newStreetEntry = Entry(newCustomerFrame, textvariable=newStreet, bg="darkgray")
+        newCity = StringVar()
+        newCityEntry = Entry(newCustomerFrame, textvariable=newCity, bg="darkgray")
+        newStateLabel = Label(newCustomerFrame, text="State:", bg="gray")
+        newZipLabel = Label(newCustomerFrame, text="ZIP:", bg="gray")
+        newState = StringVar()
+        newStateEntry = Entry(newCustomerFrame, textvariable=newState, bg="darkgray")
+        newZip = StringVar()
+        newZipEntry = Entry(newCustomerFrame, textvariable=newZip, bg="darkgray")
         newCustomerButton = Button(newCustomerFrame, text="Create")
         newCustomerButton.bind("<Button-1>", newCustomer)
-
         newCustomerLabel.grid(row=0, columnspan=2, pady=10)
         newFirstNameLabel.grid(row=1, sticky=E)
         newLastNameLabel.grid(row=2, sticky=E)
         newFirstNameEntry.grid(row=1, column=1)
         newLastNameEntry.grid(row=2, column=1)
-        newCustomerButton.grid(row=3, columnspan=2, pady=10)
+        newStreetLabel.grid(row=3, sticky=E)
+        newCityLabel.grid(row=4, sticky=E)
+        newStreetEntry.grid(row=3, column=1)
+        newCityEntry.grid(row=4, column=1)
+        newStateLabel.grid(row=5, sticky=E)
+        newZipLabel.grid(row=6, sticky=E)
+        newStateEntry.grid(row=5, column=1)
+        newZipEntry.grid(row=6, column=1)
+        newCustomerButton.grid(row=7, columnspan=2, pady=10)
 
 #Creating window and calling PaintsMain class which initialized login window
 root = Tk()
