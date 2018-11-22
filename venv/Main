@@ -12,7 +12,7 @@ cursor = connection.cursor()
 #cursor.execute('CREATE TABLE Employee (Id INTEGER PRIMARY KEY, Name TEXT, Password TEXT)')
 #Inserts new row into Employee table
 #cursor.execute('INSERT INTO Employee (Name, Password) VALUES ("Mike", "Hull")')
-#cursor.execute('INSERT INTO Employee (Name, Password) VALUES ("Admin", "1234")')
+#cursor.execute('INSERT INTO Employee (Name, Password) VALUES ("a", "1")')
 #Selecting all values from the table
 #cursor.execute('SELECT * FROM EMPLOYEE')
 #cursor.execute('CREATE TABLE Customer (Id INTEGER PRIMARY KEY, First_Name TEXT, Last_Name TEXT)')
@@ -85,16 +85,22 @@ class PaintsMain:
                 menuFrame.destroy()
                 PaintsMain.newCustomerScreen(master, who)
 
+        def size():
+            if(who=="a"):
+                return 7
+            else:
+                return 4
+
         menuFrame = Frame(master, width=300, height=200, bg="gray")
         menuFrame.pack()
         menuFrame.pack_propagate(0)
         questionLabel = Label(menuFrame, text="What would you like to do " + str(who) + "?", bg="gray")
-        menuList = Listbox(menuFrame, height=7, bg="darkgray")
+        menuList = Listbox(menuFrame, height=size(), bg="darkgray")
         menuList.insert(1, 'Lookup Customer')
         menuList.insert(2, 'Add New Customer')
         menuList.insert(3, 'Lookup Invoice')
         menuList.insert(4, 'Create New Order')
-        if(who == "Admin"):
+        if(who == "a"):
             menuList.insert(5, 'Generate Report')
             menuList.insert(6, 'Create Custom Query')
             menuList.insert(7, 'Create New Employee')
@@ -125,7 +131,7 @@ class PaintsMain:
                 else:
                     cursor.execute('SELECT * FROM Customer WHERE First_Name = "' + firstNameValue + '" AND Last_Name = "' + lastNameValue + '"')
                     nameResult = cursor.fetchall()
-                    print(str(nameResult[1]))
+                    print(str(nameResult))
 
         customerLookupFrame = Frame(master, width=300, height=200, bg="gray")
         customerLookupFrame.pack()
@@ -156,11 +162,33 @@ class PaintsMain:
 
     # Lookup customers Screen for employees
     def newCustomerScreen(master, who):
+
+        def newCustomer(event):
+            newFirstNameValue = str(newFirstName.get())
+            newLastNameValue = str(newLastName.get())
+            if (newFirstNameValue == "" or newLastNameValue == ""):
+                tkinter.messagebox.showerror('Blank Field(s) Error', 'Attention, You must fill the required fields!')
+
         newCustomerFrame = Frame(master, width=300, height=200, bg="gray")
         newCustomerFrame.pack()
         newCustomerFrame.pack_propagate(0)
-        newCustomerLabel = Label(newCustomerFrame, text="Enter credentials for new customer:", bg="gray")
-        newCustomerLabel.pack()
+        newCustomerLabel = Label(newCustomerFrame, text="Enter credentials for the new customer:", bg="gray")
+
+        newFirstNameLabel = Label(newCustomerFrame, text="First Name:", bg="gray")
+        newLastNameLabel = Label(newCustomerFrame, text="Last Name:", bg="gray")
+        newFirstName = StringVar()
+        newFirstNameEntry = Entry(newCustomerFrame, textvariable=newFirstName, bg="darkgray")
+        newLastName = StringVar()
+        newLastNameEntry = Entry(newCustomerFrame, textvariable=newLastName, bg="darkgray")
+        newCustomerButton = Button(newCustomerFrame, text="Create")
+        newCustomerButton.bind("<Button-1>", newCustomer)
+
+        newCustomerLabel.grid(row=0, columnspan=2, pady=10)
+        newFirstNameLabel.grid(row=1, sticky=E)
+        newLastNameLabel.grid(row=2, sticky=E)
+        newFirstNameEntry.grid(row=1, column=1)
+        newLastNameEntry.grid(row=2, column=1)
+        newCustomerButton.grid(row=3, columnspan=2, pady=10)
 
 #Creating window and calling PaintsMain class which initialized login window
 root = Tk()
