@@ -19,6 +19,7 @@ cursor = connection.cursor()
 #cursor.execute('INSERT INTO Customer (First_Name, Last_Name) VALUES ("Tom", "Hull")')
 #cursor.execute('INSERT INTO Customer (First_Name, Last_Name) VALUES ("Tom", "Hull")')
 #Finalizes all changes made to the database permanently
+#cursor.execute('ALTER TABLE Customer ADD Zip TEXT')
 #connection.commit()
 #How to print retrieved info
 #print(cursor.fetchall())
@@ -26,6 +27,8 @@ cursor = connection.cursor()
 #Main class/UI for software
 class PaintsMain:
 
+    currentEmployee = -1
+    currentCustomer = -1
     #Generates main login Screen when program starts
     def __init__(self, master):
 
@@ -38,8 +41,9 @@ class PaintsMain:
             result = cursor.fetchall()
             if(str(result) == '[]'):#If user not found, error window appears
                 tkinter.messagebox.showerror('Sign In Error', 'Incorrect Username or Password, Please try again')
-            else:#If user found, the login frame is removeed and the main frame is loaded
-                time.sleep(.3)
+            else:#If user found, the login frame is removed and the main frame is loaded
+                PaintsMain.currentEmployee = int(result[0][0])
+                #time.sleep(.3)
                 loginFrame.destroy()
                 PaintsMain.menuScreen(master, usernameValue)
 
@@ -57,6 +61,7 @@ class PaintsMain:
         passEntry.config(show="*");
         loginButton = Button(loginFrame, text="Login")
         loginButton.bind("<Button-1>", submit)
+        master.bind("<Return>", submit)
         signLabel.grid(row=0, columnspan = 2, pady=10)
         nameLabel.grid(row=1, sticky=E)
         passLabel.grid(row=2, sticky=E)
@@ -66,25 +71,22 @@ class PaintsMain:
 
     #Main menu Screen for employees
     def menuScreen(master, who):
-
         #When button is pressed, takes the value from the listbox and goes to the appropriate screen
         def goToPage(event):
             currentGo = menuList.get(menuList.curselection())
             if(str(currentGo)=="Lookup Customer"):
                 time.sleep(.3)
                 menuFrame.destroy()
-                PaintsMain.customerLookupScreen(master, who)
+                PaintsMain.customerLookupScreen(master)
             elif (str(currentGo) == "Add New Customer"):
                 time.sleep(.3)
                 menuFrame.destroy()
-                PaintsMain.newCustomerScreen(master, who)
+                PaintsMain.newCustomerScreen(master)
         def size():
             if(who=="a"):
                 return 7
             else:
                 return 4
-
-        # Building menuScreen Components
         menuFrame = Frame(master, width=300, height=200, bg="gray")
         menuFrame.pack()
         menuFrame.pack_propagate(0)
@@ -100,12 +102,13 @@ class PaintsMain:
             menuList.insert(7, 'Create New Employee')
         goButton = Button(menuFrame, text="Go To Screen")
         goButton.bind("<Button-1>", goToPage)
-        questionLabel.grid(columnspan = 2)
+        master.bind("<Return>", goToPage)
+        questionLabel.grid(row=0, columnspan = 2, pady=10)
         menuList.grid(rowspan=2, sticky=W)
         goButton.grid(row=2, column=1, padx=10, sticky=S)
 
     #Lookup customers Screen for employees
-    def customerLookupScreen(master, who):
+    def customerLookupScreen(master):
 
         def searchCustomer(event):
             idValue = str(customerID.get())
@@ -116,14 +119,18 @@ class PaintsMain:
             else:
                 if(idValue != ""):
                     cursor.execute('SELECT * FROM Customer WHERE Id = "' + idValue + '"')# + '" AND Password = "' + passwordValue + '"')
-                    idResult = cursor.fetchall()
-                    if(str(idResult) == "[]"):
+                    result = cursor.fetchall()
+                    if(str(result) == "[]"):
                         tkinter.messagebox.showerror('Incorrect ID','Attention, The ID you\'ve entered was not found!')
                     else:
-                        (print(str(idResult)))
+                        time.sleep(.3)
+                        PaintsMain.currentCustomer = int(result[0][0])
+                        customerLookupFrame.destroy()
+                        PaintsMain.customerInfoScreen(master)
                 else:
                     cursor.execute('SELECT * FROM Customer WHERE First_Name = "' + firstNameValue + '" AND Last_Name = "' + lastNameValue + '"')
-                    nameResult = cursor.fetchall()
+                    result = cursor.fetchall()
+                    PaintsMain.currentCustomer = int(result[0][0])
                     print(str(nameResult))
 
         #Building customerLookupScreen Components
@@ -143,6 +150,7 @@ class PaintsMain:
         lastNameEntry = Entry(customerLookupFrame, textvariable=lastName, bg="darkgray")
         searchButton = Button(customerLookupFrame, text="Search")
         searchButton.bind("<Button-1>", searchCustomer)
+        master.bind("<Return>", searchCustomer)
         lookupLabel.grid(row=0,columnspan=2, pady=10)
         idLabel.grid(row=1, sticky=E)
         idEntry.grid(row=1, column=1)
@@ -154,13 +162,38 @@ class PaintsMain:
         searchButton.grid(row=5, columnspan=2, pady=10)
 
     # Lookup customers Screen for employees
-    def newCustomerScreen(master, who):
+    def newCustomerScreen(master):
 
         def newCustomer(event):
             newFirstNameValue = str(newFirstName.get())
             newLastNameValue = str(newLastName.get())
-            if (newFirstNameValue == "" or newLastNameValue == ""):
+            newStreetValue = str(newStreet.get())
+            newCityValue = str(newCity.get())
+            newStateValue = str(newState.get())
+            newZipValue = str(newZip.get())
+            if (newFirstNameValue == "" or newLastNameValue == "" or newStreetValue == "" or newCityValue == "" or newStateValue == "" or newZipValue == ""):
                 tkinter.messagebox.showerror('Blank Field(s) Error', 'Attention, You must fill the required fields!')
+            else:
+                answer = tkinter.messagebox.askquestion('Click Yes to Proceed', 'Are you sure all of the information entered is correct?')
+                if (answer == 'yes'):
+                    cursor.execute('SELECT * FROM Customer WHERE First_Name = "' + newFirstNameValue + '" AND Last_Name = "' + newLastNameValue + '" AND Street = "' + newStreetValue + '" AND City = "' + newCityValue + '" AND State = "' + newStateValue + '" AND Zip = "' + newZipValue + '"')
+                    result = cursor.fetchall()
+                    if (str(result) != '[]'):
+                        answer = tkinter.messagebox.askquestion('Existing Customer Error', 'The customer you tried to create is already existing. Go to their profile?')
+                        if(answer == 'yes'):
+                            time.sleep(.3)
+                            PaintsMain.currentCustomer = int(result[0][0])
+                            newCustomerFrame.destroy()
+                            PaintsMain.customerInfoScreen(master)
+                    else:
+                        cursor.execute('INSERT INTO Customer (First_Name, Last_Name, Street, City, State, Zip) VALUES ("' + newFirstNameValue + '", "' + newLastNameValue + '", "' + newStreetValue + '", "' + newCityValue + '", "' + newStateValue + '", "' + newZipValue + '")')
+                        connection.commit()
+                        cursor.execute('SELECT * FROM Customer WHERE First_Name = "' + newFirstNameValue + '" AND Last_Name = "' + newLastNameValue + '" AND Street = "' + newStreetValue + '" AND City = "' + newCityValue + '" AND State = "' + newStateValue + '" AND Zip = "' + newZipValue + '"')
+                        result = cursor.fetchall()
+                        PaintsMain.currentCustomer = int(result[0][0])
+                        time.sleep(.3)
+                        newCustomerFrame.destroy()
+                        PaintsMain.customerInfoScreen(master)
 
         #Building newCustomerScreen Components
         newCustomerFrame = Frame(master, width=300, height=200, bg="gray")
@@ -187,6 +220,7 @@ class PaintsMain:
         newZipEntry = Entry(newCustomerFrame, textvariable=newZip, bg="darkgray")
         newCustomerButton = Button(newCustomerFrame, text="Create")
         newCustomerButton.bind("<Button-1>", newCustomer)
+        master.bind("<Return>", newCustomer)
         newCustomerLabel.grid(row=0, columnspan=2, pady=10)
         newFirstNameLabel.grid(row=1, sticky=E)
         newLastNameLabel.grid(row=2, sticky=E)
@@ -202,11 +236,18 @@ class PaintsMain:
         newZipEntry.grid(row=6, column=1)
         newCustomerButton.grid(row=7, columnspan=2, pady=10)
 
+    def customerInfoScreen(master):
+
+        customerInfoFrame = Frame(master, width=300, height=200, bg="gray")
+        customerInfoFrame.pack()
+        customerInfoFrame.pack_propagate(0)
+        customerInfoLabel = Label(customerInfoFrame, text="Customer Profile:" + str(PaintsMain.currentCustomer), bg="gray")
+        customerInfoLabel.grid(row=0, columnspan=2, pady=10)
+
 #Creating window and calling PaintsMain class which initialized login window
 root = Tk()
 root.title('Paints R Us')
-root.geometry("300x200")
-#root.resizable(0, 0)
+root.geometry("300x210")
 root.config(background="gray")
 b = PaintsMain(root)
 root.mainloop()
