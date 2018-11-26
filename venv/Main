@@ -31,6 +31,7 @@ class PaintsMain:
 
     currentEmployee = -1
     currentCustomer = -1
+    employeeName="blank"
     #Generates main login Screen when program starts
     def __init__(self, master):
 
@@ -39,6 +40,7 @@ class PaintsMain:
             time.sleep(.1)
             usernameValue = str(username.get())
             passwordValue = str(password.get())
+            PaintsMain.employeeName=usernameValue
             cursor.execute('SELECT * FROM EMPLOYEE WHERE Name = "' + usernameValue + '" AND Password = "' + passwordValue + '"')
             result = cursor.fetchall()
             if(str(result) == '[]'):#If user not found, error window appears
@@ -74,6 +76,8 @@ class PaintsMain:
     #Main menu Screen for employees
     def menuScreen(master, who):
         #When button is pressed, takes the value from the listbox and goes to the appropriate screen
+
+
         def goToPage(event):
             currentGo = menuList.get(menuList.curselection())
             master.unbind("<Return>")
@@ -110,6 +114,7 @@ class PaintsMain:
             menuList.insert(7, 'Create New Employee')
         goButton = Button(menuFrame, text="Go To Screen")
         goButton.bind("<Button-1>", goToPage)
+
         master.bind("<Return>", goToPage)
         questionLabel.grid(row=0, columnspan = 2, pady=10)
         menuList.grid(rowspan=2, sticky=W)
@@ -117,6 +122,11 @@ class PaintsMain:
 
     #Lookup customers Screen for employees
     def customerLookupScreen(master):
+
+        def Return(event):
+            time.sleep(.3)
+            customerLookupFrame.destroy()
+            PaintsMain.menuScreen(master,PaintsMain.employeeName)
 
         def searchCustomer(event):#ERROr PaintsMain.currentCustomer = int(result[0][0]) IndexError: list index out of range
             idValue = str(customerID.get())
@@ -156,6 +166,9 @@ class PaintsMain:
         firstNameEntry = Entry(customerLookupFrame, textvariable=firstName, bg="darkgray")
         lastName = StringVar()
         lastNameEntry = Entry(customerLookupFrame, textvariable=lastName, bg="darkgray")
+        returnButton = Button(customerLookupFrame, text="Return")
+        returnButton.bind("<Button-1>", Return)
+        master.bind("<Return>",Return)
         searchButton = Button(customerLookupFrame, text="Search")
         searchButton.bind("<Button-1>", searchCustomer)
         master.bind("<Return>", searchCustomer)
@@ -168,6 +181,7 @@ class PaintsMain:
         firstNameEntry.grid(row=3, column=1)
         lastNameEntry.grid(row=4, column=1)
         searchButton.grid(row=5, columnspan=2, pady=10)
+        returnButton.grid(row=6, columnspan=3, padx=10, sticky=S)
 
     # Lookup customers Screen for employees
     def newCustomerScreen(master):
@@ -372,4 +386,5 @@ root.title('Paints R Us')
 root.geometry("300x200")
 root.config(background="gray")
 b = PaintsMain(root)
+root.mainloop()
 root.mainloop()
