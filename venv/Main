@@ -28,7 +28,6 @@ cursor = connection.cursor()
 
 #Main class/UI for software
 class PaintsMain:
-
     currentEmployee = -1
     currentCustomer = -1
     employeeName="blank"
@@ -41,7 +40,7 @@ class PaintsMain:
             usernameValue = str(username.get())
             passwordValue = str(password.get())
             PaintsMain.employeeName=usernameValue
-            cursor.execute('SELECT * FROM EMPLOYEE WHERE Name = "' + usernameValue + '" AND Password = "' + passwordValue + '"')
+            cursor.execute('SELECT * FROM Employee WHERE Emp_Fname = "' + usernameValue + '" AND Emp_Lname = "' + passwordValue + '"')
             result = cursor.fetchall()
             if(str(result) == '[]'):#If user not found, error window appears
                 tkinter.messagebox.showerror('Sign In Error', 'Incorrect Username or Password, Please try again')
@@ -136,20 +135,23 @@ class PaintsMain:
                 tkinter.messagebox.showerror('Blank Field(s) Error', 'Attention, You must fill the required fields!')
             else:
                 if(idValue != ""):
-                    cursor.execute('SELECT * FROM Customer WHERE Id = "' + idValue + '"')# + '" AND Password = "' + passwordValue + '"')
+                    cursor.execute('SELECT * FROM Customer WHERE Cust_Code = "' + idValue + '"')# + '" AND Password = "' + passwordValue + '"')
                     result = cursor.fetchall()
                     if(str(result) == "[]"):
                         tkinter.messagebox.showerror('Incorrect ID','Attention, The ID you\'ve entered was not found!')
                     else:
                         time.sleep(.3)
-                        PaintsMain.currentCustomer = int(result[0][0])
+                        PaintsMain.currentCustomer = str(result[0][0])
                         customerLookupFrame.destroy()
                         PaintsMain.customerInfoScreen(master)
                 else:
-                    cursor.execute('SELECT * FROM Customer WHERE First_Name = "' + firstNameValue + '" AND Last_Name = "' + lastNameValue + '"')
+                    cursor.execute('SELECT * FROM Customer WHERE Cust_Fname = "' + firstNameValue + '" AND Cust_Lname = "' + lastNameValue + '"')
                     result = cursor.fetchall()
-                    PaintsMain.currentCustomer = int(result[0][0])
-                    print(str(nameResult))
+                    PaintsMain.currentCustomer = str(result[0][0])
+                    print(str(result))
+                    customerLookupFrame.destroy()
+                    PaintsMain.customerInfoScreen(master)
+
 
         #Building customerLookupScreen Components
         customerLookupFrame = Frame(master, width=300, height=200, bg="gray")
@@ -198,7 +200,7 @@ class PaintsMain:
             else:
                 answer = tkinter.messagebox.askquestion('Click Yes to Proceed', 'Are you sure all of the information entered is correct?')
                 if (answer == 'yes'):
-                    cursor.execute('SELECT * FROM Customer WHERE First_Name = "' + newFirstNameValue + '" AND Last_Name = "' + newLastNameValue + '" AND Street = "' + newStreetValue + '" AND City = "' + newCityValue + '" AND State = "' + newStateValue + '" AND Zip = "' + newZipValue + '"')
+                    cursor.execute('SELECT * FROM Customer WHERE Cust_Fname = "' + newFirstNameValue + '" AND Cust_Lname = "' + newLastNameValue + '" AND Cust_Street = "' + newStreetValue + '" AND Cust_City = "' + newCityValue + '" AND Cust_State = "' + newStateValue + '" AND Cust_ZIP = "' + newZipValue + '"')
                     result = cursor.fetchall()
                     if (str(result) != '[]'):
                         answer = tkinter.messagebox.askquestion('Existing Customer Error', 'The customer you tried to create is already existing. Go to their profile?')
@@ -208,9 +210,9 @@ class PaintsMain:
                             newCustomerFrame.destroy()
                             PaintsMain.customerInfoScreen(master)
                     else:
-                        cursor.execute('INSERT INTO Customer (First_Name, Last_Name, Street, City, State, Zip) VALUES ("' + newFirstNameValue + '", "' + newLastNameValue + '", "' + newStreetValue + '", "' + newCityValue + '", "' + newStateValue + '", "' + newZipValue + '")')
+                        cursor.execute('INSERT INTO Customer (Cust_Fname, Cust_Lname, Cust_Street, Cust_City, Cust_State, Cust_Zip) VALUES ("' + newFirstNameValue + '", "' + newLastNameValue + '", "' + newStreetValue + '", "' + newCityValue + '", "' + newStateValue + '", "' + newZipValue + '")')
                         connection.commit()
-                        cursor.execute('SELECT * FROM Customer WHERE First_Name = "' + newFirstNameValue + '" AND Last_Name = "' + newLastNameValue + '" AND Street = "' + newStreetValue + '" AND City = "' + newCityValue + '" AND State = "' + newStateValue + '" AND Zip = "' + newZipValue + '"')
+                        cursor.execute('SELECT * FROM Customer WHERE Cust_Fname = "' + newFirstNameValue + '" AND Cust_Lname = "' + newLastNameValue + '" AND Cust_Street = "' + newStreetValue + '" AND Cust_City = "' + newCityValue + '" AND Cust_State = "' + newStateValue + '" AND Cust_Zip = "' + newZipValue + '"')
                         result = cursor.fetchall()
                         PaintsMain.currentCustomer = int(result[0][0])
                         time.sleep(.3)
@@ -278,13 +280,36 @@ class PaintsMain:
                         tkinter.messagebox.showerror('Payment Error','Attention, The payment attempted was more than the balance!')
                     else:
                         currentBalance.set("$" + str(round(adjustBalance,2)))
-                        cursor.execute('UPDATE Customer SET Balance = "' + str(adjustBalance) + '" WHERE Id = "' + str(PaintsMain.currentCustomer) + '"')
+                        cursor.execute('UPDATE Customer SET Cust_Bal = "' + str(adjustBalance) + '" WHERE Cust_Code = "' + str(PaintsMain.currentCustomer) + '"')
                         connection.commit()
                         result=getResult()
                         tkinter.messagebox.showinfo('Payment Success', 'Attention, The payment has succesfully been recorded!')
+                        customerInfoFrame.destroy()
+                        paymentFrame.destroy()
 
+
+                        #Create method for creating invoice number
+                        #
+                        #
+                        cursor.execute('INSERT INTO Invoice (Inv_Number,Cust_Code,Inv_Date,Inv_Total,Inv_Terms,Pay_Made,Emp_Number) VALUES ("' + getInvoiceNum() + '","' + PaintsMain.currentCustomer + '","' + str(datetime.datetime.today()).split()[0] + '","' + PaintsMain.currentCustomer + '","' + PaintsMain.currentCustomer + '","' + PaintsMain.currentCustomer + '","' + PaintsMain.currentCustomer + '")')
+                        PaintsMain.invoiceFrame(master)
+
+                         #PaintsMain.invoiceFrame(master)
+
+        def getInvoiceNum():
+            check_InvNum=cursor.execute('SELECT Inv_Number FROM Invoice')
+            #check_InvNum.fetchone()
+            i=0
+            j=0
+            #check_InvNum.
+            while i != check_InvNum.arraysize:
+                j = j + 1
+                if j == check_InvNum.fetchone():
+                    check_InvNum = cursor.execute('SELECT Inv_Number FROM Invoice')
+                    i=0
+                return j
         def getResult():
-            cursor.execute('SELECT * FROM Customer WHERE Id = "' + str(PaintsMain.currentCustomer) + '"')
+            cursor.execute('SELECT * FROM Customer WHERE Cust_Code = "' + str(PaintsMain.currentCustomer) + '"')
             return cursor.fetchall()
 
         def isNumber(n):
@@ -333,7 +358,8 @@ class PaintsMain:
         paymentFrame.pack(side=RIGHT, padx=10)
         cBalanceLabel = Label(paymentFrame, text="Balance: ")
         currentBalance = StringVar()
-        currentBalance.set("$" + str(result[0][7]))
+        #currentBalance.set("$" + str(result[0][7]))
+        queryLabel = Label(paymentFrame, text="Search")
         cBalance = Label(paymentFrame, textvariable=currentBalance)
         payment = StringVar()
         paymentEntry = Entry(paymentFrame, textvariable=payment, width=10, bg="darkgray")
@@ -344,14 +370,14 @@ class PaintsMain:
         makePaymentButton.bind("<Button-1>", makePayment)
         master.bind("<Return>", makePayment)
         paymentLabel = Label(paymentFrame, text="Payment: ")
-        cBalanceLabel.grid(row=0, sticky=W)
-        cBalance.grid(row=1, sticky=E)
-        paymentLabel.grid(row=2, sticky=W)
-        paymentEntry.grid(row=3, sticky=E)
-        paymentDateLabel.grid(row=4, sticky=W)
-        paymentDate.grid(row=5, sticky=E)
-        makePaymentButton.grid(row=6, padx=5, pady=15)
-
+        cBalanceLabel.grid(row=1, sticky=W)
+        cBalance.grid(row=2, sticky=E)
+        paymentLabel.grid(row=3, sticky=W)
+        paymentEntry.grid(row=4, sticky=E)
+        paymentDateLabel.grid(row=5, sticky=W)
+        paymentDate.grid(row=6, sticky=E)
+        queryLabel.grid(row=0, sticky=W)
+        makePaymentButton.grid(row=7, padx=5, pady=15)
     def customQueryScreen(master):
 
         def query(event):#NEED TO HANDLE ERROR WHEN ENTER KEY IS QUERYED
@@ -368,6 +394,8 @@ class PaintsMain:
                     except(sqlite3.OperationalError):
                         tkinter.messagebox.showerror('Query Error', 'Attention, The query you have entered is not valid!')
 
+
+
         customQueryFrame = Frame(master, width=300, height=200, bg="gray")
         customQueryFrame.pack()
         customQueryFrame.pack_propagate(0)
@@ -379,6 +407,30 @@ class PaintsMain:
         queryButton = Button(customQueryFrame, text="Query", bg="gray")
         queryButton.bind("<Button-1>", query)
         queryButton.pack(pady=10)
+    def invoiceFrame(master):
+        invoiceFrame = Frame(master, width=300, height=400, bg="gray")
+        invoiceFrame.grid()
+        invoiceFrame.pack_propagate(0)
+        IDLabel = Label(invoiceFrame, text=PaintsMain.currentCustomer, bg="gray")
+        firstNameLabel = Label(invoiceFrame, text=str(cursor.execute('SELECT Cust_FName FROM Customer WHERE Cust_Code = "' + str(PaintsMain.currentCustomer)+ '"').fetchall()), bg="gray")
+        lastNameLabel = Label(invoiceFrame, text=str(cursor.execute('SELECT Cust_LName FROM CUSTOMER WHERE Cust_Code ="' + str(PaintsMain.currentCustomer)+ '"').fetchall()), bg="gray")
+        streetLabel = Label(invoiceFrame, text=str(cursor.execute('SELECT Cust_Street FROM CUSTOMER WHERE Cust_Code ="' + str(PaintsMain.currentCustomer)+ '"').fetchall()), bg="gray")
+        cityLabel = Label(invoiceFrame, text=str(cursor.execute('SELECT Cust_CITY FROM CUSTOMER WHERE Cust_Code ="' + str(PaintsMain.currentCustomer)+ '"').fetchall()), bg="gray")
+        stateLabel = Label(invoiceFrame, text=str(cursor.execute('SELECT Cust_State FROM CUSTOMER WHERE Cust_Code ="' + str(PaintsMain.currentCustomer)+ '"').fetchall()), bg="gray")
+        zipLabel = Label(invoiceFrame, text=str(cursor.execute('SELECT Cust_ZIP FROM CUSTOMER WHERE Cust_Code ="' + str(PaintsMain.currentCustomer)+ '"').fetchall()), bg="gray")
+        IDLabel.grid(row=0)
+        firstNameLabel.grid(row=1, column=0)
+        lastNameLabel.grid(row=1, column=1)
+        streetLabel.grid(row=2)
+        cityLabel.grid(row=3)
+        stateLabel.grid(row=4)
+        zipLabel.grid(row=5)
+       # customQuery = StringVar()
+       # customQueryEntry = Text(customQueryFrame, height=5, width=30, bg="darkgray")
+        #customQueryEntry.pack()
+       # queryButton = Button(customQueryFrame, text="Query", bg="gray")
+       # queryButton.bind("<Button-1>", query)
+       # queryButton.pack(pady=10)
 
 #Creating window and calling PaintsMain class which initialized login window
 root = Tk()
@@ -386,5 +438,4 @@ root.title('Paints R Us')
 root.geometry("300x200")
 root.config(background="gray")
 b = PaintsMain(root)
-root.mainloop()
 root.mainloop()
