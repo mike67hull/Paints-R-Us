@@ -1,3 +1,4 @@
+
 from tkinter import *
 import tkinter as tk
 import tkinter.messagebox
@@ -28,6 +29,7 @@ cursor = connection.cursor()
 
 #Main class/UI for software
 class PaintsMain:
+    currentPayment = 0
     currentEmployee = -1
     currentCustomer = -1
     employeeName="blank"
@@ -262,6 +264,12 @@ class PaintsMain:
 
     def customerInfoScreen(master):
 
+        def addToCart(event):
+            search=productList.get(productList.curselection())
+            cart.insert(0, search)
+
+
+
         def makePayment(event):
             paymentAmount = payment.get()
             result = getResult()
@@ -291,7 +299,7 @@ class PaintsMain:
                         #Create method for creating invoice number
                         #
                         #
-                        cursor.execute('INSERT INTO Invoice (Inv_Number,Cust_Code,Inv_Date,Inv_Total,Inv_Terms,Pay_Made,Emp_Number) VALUES ("' + getInvoiceNum() + '","' + PaintsMain.currentCustomer + '","' + str(datetime.datetime.today()).split()[0] + '","' + PaintsMain.currentCustomer + '","' + PaintsMain.currentCustomer + '","' + PaintsMain.currentCustomer + '","' + PaintsMain.currentCustomer + '")')
+                       # cursor.execute('INSERT INTO Invoice (Inv_Number,Cust_Code,Inv_Date,Inv_Total,Inv_Terms,Pay_Made,Emp_Number) VALUES ("' + getInvoiceNum() + '","' + PaintsMain.currentCustomer + '","' + str(datetime.datetime.today()).split()[0] + '","' + PaintsMain.currentCustomer + '","' + PaintsMain.currentCustomer + '","' + PaintsMain.currentCustomer + '","' + PaintsMain.currentCustomer + '")')
                         PaintsMain.invoiceFrame(master)
 
                          #PaintsMain.invoiceFrame(master)
@@ -357,27 +365,46 @@ class PaintsMain:
         paymentFrame = Frame(master, highlightbackground="red", highlightcolor="red",highlightthickness=1)
         paymentFrame.pack(side=RIGHT, padx=10)
         cBalanceLabel = Label(paymentFrame, text="Balance: ")
+        cartLabel= Label(paymentFrame, text="Cart")
         currentBalance = StringVar()
         #currentBalance.set("$" + str(result[0][7]))
         queryLabel = Label(paymentFrame, text="Search")
+        productList = Listbox(paymentFrame, bg="darkgray")
+
+        pList=cursor.execute('SELECT * FROM Product')
+        i=0
+        pList.__sizeof__()
+        while i<pList.__sizeof__():
+            productList.insert(int(i),pList.fetchone())
+            i=i+1
+        cart = Listbox(paymentFrame, bg="darkgray")
+
+        productList.grid(row=1, sticky=W)
+        cartLabel.grid(row=2, sticky=W)
+        cart.grid(row=3, sticky=W)
         cBalance = Label(paymentFrame, textvariable=currentBalance)
         payment = StringVar()
         paymentEntry = Entry(paymentFrame, textvariable=payment, width=10, bg="darkgray")
         paymentDateLabel = Label(paymentFrame, text="Payment Date:")
         currentDate = datetime.datetime.today().strftime('%Y-%m-%d')
         paymentDate = Label(paymentFrame, text=str(currentDate))
+        addToCartButton = Button(paymentFrame, text="Add to cart", bg="gray")
+        addToCartButton.bind("<Button-1>", addToCart)
+        master.bind("<Return>", addToCart)
         makePaymentButton = Button(paymentFrame, text="Make Payment", bg="gray")
         makePaymentButton.bind("<Button-1>", makePayment)
         master.bind("<Return>", makePayment)
         paymentLabel = Label(paymentFrame, text="Payment: ")
-        cBalanceLabel.grid(row=1, sticky=W)
-        cBalance.grid(row=2, sticky=E)
-        paymentLabel.grid(row=3, sticky=W)
-        paymentEntry.grid(row=4, sticky=E)
-        paymentDateLabel.grid(row=5, sticky=W)
-        paymentDate.grid(row=6, sticky=E)
+        addToCartButton.grid(row=4, sticky=W)
+        cBalanceLabel.grid(row=5, sticky=W)
+        cBalance.grid(row=6, sticky=E)
+        paymentLabel.grid(row=7, sticky=W)
+        paymentEntry.grid(row=8, sticky=E)
+        paymentDateLabel.grid(row=9, sticky=W)
+        paymentDate.grid(row=10, sticky=E)
         queryLabel.grid(row=0, sticky=W)
-        makePaymentButton.grid(row=7, padx=5, pady=15)
+        makePaymentButton.grid(row=11, padx=5, pady=15)
+
     def customQueryScreen(master):
 
         def query(event):#NEED TO HANDLE ERROR WHEN ENTER KEY IS QUERYED
