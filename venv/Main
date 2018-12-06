@@ -15,13 +15,14 @@ cursor = connection.cursor()
 #cursor.execute('INSERT INTO Employee (Name, Password) VALUES ("Mike", "Hull")')
 #cursor.execute('INSERT INTO Employee (Name, Password) VALUES ("a", "1")')
 #Selecting all values from the table
-#cursor.execute('SELECT * FROM EMPLOYEE')
+#cursor.execute('SELECT * F ROM EMPLOYEE')
 #cursor.execute('CREATE TABLE Customer (Id INTEGER PRIMARY KEY, First_Name TEXT, Last_Name TEXT)')
 #cursor.execute('INSERT INTO Customer (First_Name, Last_Name) VALUES ("Tom", "Hull")')
 #cursor.execute('INSERT INTO Customer (First_Name, Last_Name) VALUES ("Tom", "Hull")')
 #Finalizes all changes made to the database permanently
 #cursor.execute
 #cursor.execute('ALTER TABLE Customer ADD Balance DOUBLE')
+#cursor.execute('DELETE FROM Customer WHERE Cust_Fname = "Jeff"')
 #connection.commit()
 #How to print retrieved info
 #print(cursor.fetchall())
@@ -33,7 +34,7 @@ class PaintsMain:
     currentCustomer = -1
     employeeName="blank"
     total=0
-    #Generates main login Screen when program starts
+    #FINISHED, DO NOT TOUCH
     def __init__(self, master):
 
         #When submit button is clicked, Username and Password values are retrieved from 'PaintsRUs.db' to see if they exist
@@ -74,7 +75,7 @@ class PaintsMain:
         passEntry.grid(row=2, column=1)
         loginButton.grid(row=3, columnspan = 2, pady=10)
 
-    #Main menu Screen for employees
+    #FINISHED, DO NOT TOUCH
     def menuScreen(master, who):
         #When button is pressed, takes the value from the listbox and goes to the appropriate screen
 
@@ -94,9 +95,17 @@ class PaintsMain:
                 time.sleep(.3)
                 menuFrame.destroy()
                 PaintsMain.customQueryScreen(master)
+            elif (str(currentGo) == "Create New Order"):
+                time.sleep(.3)
+                menuFrame.destroy()
+                PaintsMain.newOrderScreen(master)
+            elif (str(currentGo) == "Create New Employee"):
+                time.sleep(.3)
+                menuFrame.destroy()
+                PaintsMain.newEmployeeScreen(master)
 
         def size():
-            if(who=="a"):
+            if(who=="Paul"):
                 return 7
             else:
                 return 4
@@ -109,7 +118,7 @@ class PaintsMain:
         menuList.insert(2, 'Add New Customer')
         menuList.insert(3, 'Lookup Invoice')
         menuList.insert(4, 'Create New Order')
-        if(who == "a"):
+        if(who == "Paul"):
             menuList.insert(5, 'Generate Report')
             menuList.insert(6, 'Create Custom Query')
             menuList.insert(7, 'Create New Employee')
@@ -121,7 +130,7 @@ class PaintsMain:
         menuList.grid(rowspan=2, sticky=W)
         goButton.grid(row=2, column=1, padx=10, sticky=S)
 
-    #Lookup customers Screen for employees
+    #FINISHED, DO NOT TOUCH
     def customerLookupScreen(master):
 
         def Return(event):
@@ -150,10 +159,8 @@ class PaintsMain:
                     cursor.execute('SELECT * FROM Customer WHERE Cust_Fname = "' + firstNameValue + '" AND Cust_Lname = "' + lastNameValue + '"')
                     result = cursor.fetchall()
                     PaintsMain.currentCustomer = str(result[0][0])
-                    print(str(result))
                     customerLookupFrame.destroy()
                     PaintsMain.customerInfoScreen(master)
-
 
         #Building customerLookupScreen Components
         customerLookupFrame = Frame(master, width=300, height=200, bg="gray")
@@ -187,8 +194,12 @@ class PaintsMain:
         searchButton.grid(row=5, columnspan=2, pady=10)
         returnButton.grid(row=6, columnspan=3, padx=10, sticky=S)
 
-    # Lookup customers Screen for employees
+    #FINISHED, DO NOT TOUCH
     def newCustomerScreen(master):
+        def Return(event):
+            time.sleep(.3)
+            newCustomerFrame.destroy()
+            PaintsMain.menuScreen(master, PaintsMain.employeeName)
 
         def newCustomer(event):
             newFirstNameValue = str(newFirstName.get())
@@ -208,15 +219,15 @@ class PaintsMain:
                         answer = tkinter.messagebox.askquestion('Existing Customer Error', 'The customer you tried to create is already existing. Go to their profile?')
                         if(answer == 'yes'):
                             time.sleep(.3)
-                            PaintsMain.currentCustomer = int(result[0][0])
+                            PaintsMain.currentCustomer = result[0][0]
                             newCustomerFrame.destroy()
                             PaintsMain.customerInfoScreen(master)
                     else:
-                        cursor.execute('INSERT INTO Customer (Cust_Fname, Cust_Lname, Cust_Street, Cust_City, Cust_State, Cust_Zip) VALUES ("' + newFirstNameValue + '", "' + newLastNameValue + '", "' + newStreetValue + '", "' + newCityValue + '", "' + newStateValue + '", "' + newZipValue + '")')
+                        cursor.execute('INSERT INTO Customer (Cust_Code, Cust_Fname, Cust_Lname, Cust_Street, Cust_City, Cust_State, Cust_ZIP, Cust_Bal) VALUES ("' + newLastNameValue + '1", "' + newFirstNameValue + '", "' + newLastNameValue + '", "' + newStreetValue + '", "' + newCityValue + '", "' + newStateValue + '", "' + newZipValue + '", "0")')
                         connection.commit()
-                        cursor.execute('SELECT * FROM Customer WHERE Cust_Fname = "' + newFirstNameValue + '" AND Cust_Lname = "' + newLastNameValue + '" AND Cust_Street = "' + newStreetValue + '" AND Cust_City = "' + newCityValue + '" AND Cust_State = "' + newStateValue + '" AND Cust_Zip = "' + newZipValue + '"')
+                        cursor.execute('SELECT * FROM Customer WHERE Cust_Fname = "' + newFirstNameValue + '" AND Cust_Lname = "' + newLastNameValue + '" AND Cust_Street = "' + newStreetValue + '" AND Cust_City = "' + newCityValue + '" AND Cust_State = "' + newStateValue + '" AND Cust_ZIP = "' + newZipValue + '"')
                         result = cursor.fetchall()
-                        PaintsMain.currentCustomer = int(result[0][0])
+                        PaintsMain.currentCustomer = result[0][0]
                         time.sleep(.3)
                         newCustomerFrame.destroy()
                         PaintsMain.customerInfoScreen(master)
@@ -261,65 +272,40 @@ class PaintsMain:
         newStateEntry.grid(row=5, column=1)
         newZipEntry.grid(row=6, column=1)
         newCustomerButton.grid(row=7, columnspan=2, pady=10)
+        returnButton = Button(newCustomerFrame, text="Return")
+        returnButton.bind("<Button-1>", Return)
+        returnButton.grid(row=8, column=1)
 
+    #FINISHED, DO NOT TOUCH
     def customerInfoScreen(master):
-
-        def addToCart(event):
-            search=productList.get(productList.curselection())
-            cart.insert(0, search)
-            PaintsMain.total = int(PaintsMain.total)+1
-            PaintsMain.total=int(PaintsMain.total)+int(cursor.execute('SELECT Prod_Price FROM Product WHERE * = "'+str(search)+"").fetchall())
-            paymentTotalLabel = Label(paymentFrame, text=str(PaintsMain.total), bg="gray")
-           # cursor.execute('SELECT Prod_Price WHERE *="'+search+'')
-
-
-
+        def Return(event):
+            time.sleep(.3)
+            customerInfoFrame.destroy()
+            paymentFrame.destroy()
+            PaintsMain.menuScreen(master, PaintsMain.employeeName)
         def makePayment(event):
             paymentAmount = payment.get()
             result = getResult()
             if (paymentAmount == ""):
-                tkinter.messagebox.showerror('Blank Field(s) Error', 'Attention, You did not enter a payment amount!')
-            elif(isNumber(paymentAmount) == False):
+                tkinter.messagebox.showerror('Blank Field(s) Error','Attention, You did not enter a payment amount!')
+            elif (isNumber(paymentAmount) == False):
                 tkinter.messagebox.showerror('Payment Error', 'Attention, The value you entered is not a number!')
             else:
                 paymentAmount = float(paymentAmount)
-                answer = tkinter.messagebox.askquestion('Click Yes to Proceed', 'Are you sure this payment amount is correct?')
+                answer = tkinter.messagebox.askquestion('Click Yes to Proceed','Are you sure this payment amount is correct?')
                 if (answer == 'yes'):
-                    adjustBalance = float(result[0][7])-paymentAmount
-                    if(paymentAmount<.01):
+                    adjustBalance = float(result[0][7]) - paymentAmount
+                    if (paymentAmount < .01):
                         tkinter.messagebox.showerror('Payment Error','Attention, The payment attempted was negative/zero!')
-                    elif(adjustBalance<0):
+                    elif (adjustBalance < 0):
                         tkinter.messagebox.showerror('Payment Error','Attention, The payment attempted was more than the balance!')
                     else:
-                        currentBalance.set("$" + str(round(adjustBalance,2)))
+                        currentBalance.set("$" + str(round(adjustBalance, 2)))
                         cursor.execute('UPDATE Customer SET Cust_Bal = "' + str(adjustBalance) + '" WHERE Cust_Code = "' + str(PaintsMain.currentCustomer) + '"')
                         connection.commit()
-                        result=getResult()
-                        tkinter.messagebox.showinfo('Payment Success', 'Attention, The payment has succesfully been recorded!')
-                        customerInfoFrame.destroy()
-                        paymentFrame.destroy()
+                        result = getResult()
+                        tkinter.messagebox.showinfo('Payment Success','Attention, The payment has succesfully been recorded!')
 
-
-                        #Create method for creating invoice number
-                        #
-                        #
-                       # cursor.execute('INSERT INTO Invoice (Inv_Number,Cust_Code,Inv_Date,Inv_Total,Inv_Terms,Pay_Made,Emp_Number) VALUES ("' + getInvoiceNum() + '","' + PaintsMain.currentCustomer + '","' + str(datetime.datetime.today()).split()[0] + '","' + PaintsMain.currentCustomer + '","' + PaintsMain.currentCustomer + '","' + PaintsMain.currentCustomer + '","' + PaintsMain.currentCustomer + '")')
-                        PaintsMain.invoiceFrame(master)
-
-                         #PaintsMain.invoiceFrame(master)
-
-        def getInvoiceNum():
-            check_InvNum=cursor.execute('SELECT Inv_Number FROM Invoice')
-            #check_InvNum.fetchone()
-            i=0
-            j=0
-            #check_InvNum.
-            while i != check_InvNum.arraysize:
-                j = j + 1
-                if j == check_InvNum.fetchone():
-                    check_InvNum = cursor.execute('SELECT Inv_Number FROM Invoice')
-                    i=0
-                return j
         def getResult():
             cursor.execute('SELECT * FROM Customer WHERE Cust_Code = "' + str(PaintsMain.currentCustomer) + '"')
             return cursor.fetchall()
@@ -366,6 +352,178 @@ class PaintsMain:
         cState.grid(row=6, column=1, sticky=W)
         cZip.grid(row=7, column=1, sticky=W)
 
+        paymentFrame = Frame(master, highlightbackground="red", highlightcolor="red", highlightthickness=1)
+        paymentFrame.pack(side=RIGHT, padx=5)
+        cBalanceLabel = Label(paymentFrame, text="Balance: ")
+        currentBalance = StringVar()
+        currentBalance.set("$" + str(result[0][7]))
+        cBalance = Label(paymentFrame, textvariable=currentBalance)
+        payment = StringVar()
+        paymentEntry = Entry(paymentFrame, textvariable=payment, width=10, bg="darkgray")
+        paymentDateLabel = Label(paymentFrame, text="Payment Date:")
+        currentDate = datetime.datetime.today().strftime('%Y-%m-%d')
+        paymentDate = Label(paymentFrame, text=str(currentDate))
+        makePaymentButton = Button(paymentFrame, text="Make Payment", bg="gray")
+        makePaymentButton.bind("<Button-1>", makePayment)
+        master.bind("<Return>", makePayment)
+        paymentLabel = Label(paymentFrame, text="Payment: ")
+        cBalanceLabel.grid(row=0, sticky=W)
+        cBalance.grid(row=1, sticky=E)
+        paymentLabel.grid(row=2, sticky=W)
+        paymentEntry.grid(row=3, sticky=E)
+        paymentDateLabel.grid(row=4, sticky=W)
+        paymentDate.grid(row=5, sticky=E)
+        makePaymentButton.grid(row=6, padx=1, pady=15)
+        returnButton = Button(paymentFrame, text="Return")
+        returnButton.bind("<Button-1>", Return)
+        returnButton.grid(row=7, sticky=E)
+
+    #FINISHED, DO NOT TOUCH
+    def customQueryScreen(master):
+        def Return(event):
+            time.sleep(.3)
+            customQueryFrame.destroy()
+            PaintsMain.menuScreen(master, PaintsMain.employeeName)
+        def query(event):#NEED TO HANDLE ERROR WHEN ENTER KEY IS QUERYED
+            enteredQuery = customQueryEntry.get("1.0", 'end-1c')
+            if(enteredQuery == ""):
+                tkinter.messagebox.showerror('Blank Field(s) Error', 'Attention, You did not enter a query!')
+            else:
+                answer = tkinter.messagebox.askquestion('Click Yes to Proceed','Are you sure your query is correct?')
+                if(answer == "yes"):
+                    try:
+                        cursor.execute(enteredQuery)
+                        connection.commit()
+                        tkinter.messagebox.showinfo('Query Success', 'Attention, The query has succesfully been entered!')
+                    except(sqlite3.OperationalError):
+                        tkinter.messagebox.showerror('Query Error', 'Attention, The query you have entered is not valid!')
+
+        customQueryFrame = Frame(master, width=300, height=200, bg="gray")
+        customQueryFrame.pack()
+        customQueryFrame.pack_propagate(0)
+        customQueryLabel = Label(customQueryFrame, text="Enter a Custom Query: ", bg="gray")
+        customQueryLabel.pack(padx=5, pady=10)
+        customQuery = StringVar()
+        customQueryEntry = Text(customQueryFrame, height=5, width=30, bg="darkgray")
+        customQueryEntry.pack()
+        queryButton = Button(customQueryFrame, text="Query", bg="gray")
+        queryButton.bind("<Button-1>", query)
+        queryButton.pack(pady=10)
+        returnButton = Button(customQueryFrame, text="Return")
+        returnButton.bind("<Button-1>", Return)
+        returnButton.pack(pady=11)
+        #master.bind("<Return>", Return)
+
+
+
+#############################BELOW THIS POINT IS STILL BEING WORKED ON##################################################
+
+
+    def newEmployeeScreen(master):
+
+        def newEmployee(event):
+            print("yay")
+
+        # Building newCustomerScreen Components
+        newEmployeeFrame = Frame(master, width=300, height=200, bg="gray")
+        newEmployeeFrame.pack()
+        newEmployeeFrame.pack_propagate(0)
+        newEmployeeLabel = Label(newEmployeeFrame, text="Enter credentials for the new employee:", bg="gray")
+        newFirstNameLabel = Label(newEmployeeFrame, text="First Name:", bg="gray")
+        newLastNameLabel = Label(newEmployeeFrame, text="Last Name:", bg="gray")
+        newFirstName = StringVar()
+        newFirstNameEntry = Entry(newEmployeeFrame, textvariable=newFirstName, bg="darkgray")
+        newLastName = StringVar()
+        newLastNameEntry = Entry(newEmployeeFrame, textvariable=newLastName, bg="darkgray")
+        newTitleLabel = Label(newEmployeeFrame, text="Title:", bg="gray")
+        newDepartmentLabel = Label(newEmployeeFrame, text="Department:", bg="gray")
+        newTitle = StringVar()
+        newTitleEntry = Entry(newEmployeeFrame, textvariable=newTitle, bg="darkgray")
+        newDepartment = StringVar()
+        newDepartmentEntry = Entry(newEmployeeFrame, textvariable=newDepartment, bg="darkgray")
+        newEmployeeButton = Button(newEmployeeFrame, text="Create")
+        newEmployeeButton.bind("<Button-1>", newEmployee)
+        master.bind("<Return>", newEmployee)
+        newEmployeeLabel.grid(row=0, columnspan=2, pady=5)
+        newFirstNameLabel.grid(row=1, sticky=E)
+        newLastNameLabel.grid(row=2, sticky=E)
+        newFirstNameEntry.grid(row=1, column=1)
+        newLastNameEntry.grid(row=2, column=1)
+        newTitleLabel.grid(row=3, sticky=E)
+        newDepartmentLabel.grid(row=4, sticky=E)
+        newTitleEntry.grid(row=3, column=1)
+        newDepartmentEntry.grid(row=4, column=1)
+        newEmployeeButton.grid(row=7, columnspan=2, pady=10)
+
+    #NOT FINISHED---LINKED TO MENU
+    def newOrderScreen(master):
+        def Return(event):
+            time.sleep(.3)
+            paymentFrame.destroy()
+            PaintsMain.menuScreen(master, PaintsMain.employeeName)
+
+        def addToCart(event):
+            search=productList.get(productList.curselection())
+            cart.insert(0, search)
+            mylist = str(search).split(" ")
+            print(mylist)
+            checker = mylist[0]
+            print(checker)
+            price=cursor.execute('SELECT Prod_Price FROM Product WHERE Prod_SKU = "' + str(checker) + '"').fetchall()
+            prodPrice=price[0]
+            #PaintsMain.total = int(PaintsMain.total)+1
+            PaintsMain.total=int(PaintsMain.total)+int(prodPrice)
+            paymentTotalLabel = Label(paymentFrame, text=str(PaintsMain.total), bg="gray")
+           # cursor.execute('SELECT Prod_Price WHERE *="'+search+'')
+
+        def makePayment(event):
+            paymentAmount = payment.get()
+            result = getResult()
+            if (paymentAmount == ""
+                                 ""):
+                tkinter.messagebox.showerror('Blank Field(s) Error', 'Attention, You did not enter a payment amount!')
+            elif(isNumber(paymentAmount) == False):
+                tkinter.messagebox.showerror('Payment Error', 'Attention, The value you entered is not a number!')
+            else:
+                paymentAmount = float(paymentAmount)
+                answer = tkinter.messagebox.askquestion('Click Yes to Proceed', 'Are you sure this payment amount is correct?')
+                if (answer == 'yes'):
+                    adjustBalance = float(result[0][7])-paymentAmount
+                    if(paymentAmount<.01):
+                        tkinter.messagebox.showerror('Payment Error','Attention, The payment attempted was negative/zero!')
+                    elif(adjustBalance<0):
+                        tkinter.messagebox.showerror('Payment Error','Attention, The payment attempted was more than the balance!')
+                    else:
+                        currentBalance.set("$" + str(round(adjustBalance,2)))
+                        cursor.execute('UPDATE Customer SET Cust_Bal = "' + str(adjustBalance) + '" WHERE Cust_Code = "' + str(PaintsMain.currentCustomer) + '"')
+                        connection.commit()
+                        result=getResult()
+                        tkinter.messagebox.showinfo('Payment Success', 'Attention, The payment has succesfully been recorded!')
+                       # customerInfoFrame.destroy()
+                        paymentFrame.destroy()
+
+
+                        #Create method for creating invoice number
+                        #
+                        #
+                       # cursor.execute('INSERT INTO Invoice (Inv_Number,Cust_Code,Inv_Date,Inv_Total,Inv_Terms,Pay_Made,Emp_Number) VALUES ("' + getInvoiceNum() + '","' + PaintsMain.currentCustomer + '","' + str(datetime.datetime.today()).split()[0] + '","' + PaintsMain.currentCustomer + '","' + PaintsMain.currentCustomer + '","' + PaintsMain.currentCustomer + '","' + PaintsMain.currentCustomer + '")')
+                        PaintsMain.invoiceFrame(master)
+
+                         #PaintsMain.invoiceFrame(master)
+
+        def getInvoiceNum():
+            check_InvNum=cursor.execute('SELECT Inv_Number FROM Invoice')
+            #check_InvNum.fetchone()
+            i=0
+            j=0
+            #check_InvNum.
+            while i != check_InvNum.arraysize:
+                j = j + 1
+                if j == check_InvNum.fetchone():
+                    check_InvNum = cursor.execute('SELECT Inv_Number FROM Invoice')
+                    i=0
+                return j
+
         paymentFrame = Frame(master, highlightbackground="red", highlightcolor="red",highlightthickness=1)
         paymentFrame.pack(side=RIGHT, padx=10)
         cBalanceLabel = Label(paymentFrame, text="Balance: ")
@@ -410,36 +568,11 @@ class PaintsMain:
         paymentDate.grid(row=10, sticky=E)
         queryLabel.grid(row=0, sticky=W)
         makePaymentButton.grid(row=11, padx=5, pady=15)
+        returnButton = Button(paymentFrame, text="Return")
+        returnButton.bind("<Button-1>", Return)
+        returnButton.grid(row=12, column=1)
 
-    def customQueryScreen(master):
-
-        def query(event):#NEED TO HANDLE ERROR WHEN ENTER KEY IS QUERYED
-            enteredQuery = customQueryEntry.get("1.0", 'end-1c')
-            if(enteredQuery == ""):
-                tkinter.messagebox.showerror('Blank Field(s) Error', 'Attention, You did not enter a query!')
-            else:
-                answer = tkinter.messagebox.askquestion('Click Yes to Proceed','Are you sure your query is correct?')
-                if(answer == "yes"):
-                    try:
-                        cursor.execute(enteredQuery)
-                        connection.commit()
-                        tkinter.messagebox.showinfo('Query Success', 'Attention, The query has succesfully been entered!')
-                    except(sqlite3.OperationalError):
-                        tkinter.messagebox.showerror('Query Error', 'Attention, The query you have entered is not valid!')
-
-
-
-        customQueryFrame = Frame(master, width=300, height=200, bg="gray")
-        customQueryFrame.pack()
-        customQueryFrame.pack_propagate(0)
-        customQueryLabel = Label(customQueryFrame, text="Enter a Custom Query: ", bg="gray")
-        customQueryLabel.pack(padx=5, pady=10)
-        customQuery = StringVar()
-        customQueryEntry = Text(customQueryFrame, height=5, width=30, bg="darkgray")
-        customQueryEntry.pack()
-        queryButton = Button(customQueryFrame, text="Query", bg="gray")
-        queryButton.bind("<Button-1>", query)
-        queryButton.pack(pady=10)
+    #NOT FINISHED
     def invoiceFrame(master):
         invoiceFrame = Frame(master, width=300, height=400, bg="gray")
         invoiceFrame.grid()
@@ -464,6 +597,10 @@ class PaintsMain:
        # queryButton = Button(customQueryFrame, text="Query", bg="gray")
        # queryButton.bind("<Button-1>", query)
        # queryButton.pack(pady=10)
+
+
+#############################ABOVE THIS POINT IS STILL BEING WORKED ON##################################################
+
 
 #Creating window and calling PaintsMain class which initialized login window
 root = Tk()
