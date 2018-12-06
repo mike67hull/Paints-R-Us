@@ -395,10 +395,17 @@ class PaintsMain:
                         cursor.execute(enteredQuery)
                         connection.commit()
                         tkinter.messagebox.showinfo('Query Success', 'Attention, The query has succesfully been entered!')
+                        pList = cursor.execute(enteredQuery)
+                        i = 0
+                        pList.__sizeof__()
+                        while i < pList.__sizeof__():
+                            queryList.insert(int(i), pList.fetchone())
+                            i = i + 1
+
                     except(sqlite3.OperationalError):
                         tkinter.messagebox.showerror('Query Error', 'Attention, The query you have entered is not valid!')
 
-        customQueryFrame = Frame(master, width=300, height=200, bg="gray")
+        customQueryFrame = Frame(master, width=300, height=400, bg="gray")
         customQueryFrame.pack()
         customQueryFrame.pack_propagate(0)
         customQueryLabel = Label(customQueryFrame, text="Enter a Custom Query: ", bg="gray")
@@ -412,6 +419,8 @@ class PaintsMain:
         returnButton = Button(customQueryFrame, text="Return")
         returnButton.bind("<Button-1>", Return)
         returnButton.pack(pady=11)
+        queryList = Listbox(customQueryFrame, bg="darkgray")
+        queryList.pack(pady=12)
         #master.bind("<Return>", Return)
 
 
@@ -420,6 +429,10 @@ class PaintsMain:
 
 
     def newEmployeeScreen(master):
+        def Return(event):
+            time.sleep(.3)
+            newEmployeeFrame.destroy()
+            PaintsMain.menuScreen(master, PaintsMain.employeeName)
 
         def newEmployee(event):
             print("yay")
@@ -454,6 +467,9 @@ class PaintsMain:
         newTitleEntry.grid(row=3, column=1)
         newDepartmentEntry.grid(row=4, column=1)
         newEmployeeButton.grid(row=7, columnspan=2, pady=10)
+        returnButton = Button(newEmployeeFrame, text="Return")
+        returnButton.bind("<Button-1>", Return)
+        returnButton.grid(row=12, column=1)
 
     #NOT FINISHED---LINKED TO MENU
     def newOrderScreen(master):
