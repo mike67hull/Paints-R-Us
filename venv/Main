@@ -1,4 +1,3 @@
-
 from tkinter import *
 import tkinter as tk
 import tkinter.messagebox
@@ -33,6 +32,7 @@ class PaintsMain:
     currentEmployee = -1
     currentCustomer = -1
     employeeName="blank"
+    total=0
     #Generates main login Screen when program starts
     def __init__(self, master):
 
@@ -267,6 +267,10 @@ class PaintsMain:
         def addToCart(event):
             search=productList.get(productList.curselection())
             cart.insert(0, search)
+            PaintsMain.total = int(PaintsMain.total)+1
+            PaintsMain.total=int(PaintsMain.total)+int(cursor.execute('SELECT Prod_Price FROM Product WHERE * = "'+str(search)+"").fetchall())
+            paymentTotalLabel = Label(paymentFrame, text=str(PaintsMain.total), bg="gray")
+           # cursor.execute('SELECT Prod_Price WHERE *="'+search+'')
 
 
 
@@ -395,11 +399,13 @@ class PaintsMain:
         makePaymentButton.bind("<Button-1>", makePayment)
         master.bind("<Return>", makePayment)
         paymentLabel = Label(paymentFrame, text="Payment: ")
+        PaintsMain.total=0
+        paymentTotalLabel = Label(paymentFrame, text=str(PaintsMain.total), bg="gray")
         addToCartButton.grid(row=4, sticky=W)
         cBalanceLabel.grid(row=5, sticky=W)
         cBalance.grid(row=6, sticky=E)
         paymentLabel.grid(row=7, sticky=W)
-        paymentEntry.grid(row=8, sticky=E)
+        paymentTotalLabel.grid(row=8, sticky=E)
         paymentDateLabel.grid(row=9, sticky=W)
         paymentDate.grid(row=10, sticky=E)
         queryLabel.grid(row=0, sticky=W)
