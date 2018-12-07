@@ -196,6 +196,10 @@ class PaintsMain:
 
     #FINISHED, DO NOT TOUCH
     def newCustomerScreen(master):
+        def Return(event):
+            time.sleep(.3)
+            newCustomerFrame.destroy()
+            PaintsMain.menuScreen(master, PaintsMain.employeeName)
 
         def newCustomer(event):
             newFirstNameValue = str(newFirstName.get())
@@ -268,9 +272,17 @@ class PaintsMain:
         newStateEntry.grid(row=5, column=1)
         newZipEntry.grid(row=6, column=1)
         newCustomerButton.grid(row=7, columnspan=2, pady=10)
+        returnButton = Button(newCustomerFrame, text="Return")
+        returnButton.bind("<Button-1>", Return)
+        returnButton.grid(row=8, column=1)
 
     #FINISHED, DO NOT TOUCH
     def customerInfoScreen(master):
+        def Return(event):
+            time.sleep(.3)
+            customerInfoFrame.destroy()
+            paymentFrame.destroy()
+            PaintsMain.menuScreen(master, PaintsMain.employeeName)
         def makePayment(event):
             paymentAmount = payment.get()
             result = getResult()
@@ -362,10 +374,16 @@ class PaintsMain:
         paymentDateLabel.grid(row=4, sticky=W)
         paymentDate.grid(row=5, sticky=E)
         makePaymentButton.grid(row=6, padx=1, pady=15)
+        returnButton = Button(paymentFrame, text="Return")
+        returnButton.bind("<Button-1>", Return)
+        returnButton.grid(row=7, sticky=E)
 
     #FINISHED, DO NOT TOUCH
     def customQueryScreen(master):
-
+        def Return(event):
+            time.sleep(.3)
+            customQueryFrame.destroy()
+            PaintsMain.menuScreen(master, PaintsMain.employeeName)
         def query(event):#NEED TO HANDLE ERROR WHEN ENTER KEY IS QUERYED
             enteredQuery = customQueryEntry.get("1.0", 'end-1c')
             if(enteredQuery == ""):
@@ -377,10 +395,17 @@ class PaintsMain:
                         cursor.execute(enteredQuery)
                         connection.commit()
                         tkinter.messagebox.showinfo('Query Success', 'Attention, The query has succesfully been entered!')
+                        pList = cursor.execute(enteredQuery)
+                        i = 0
+                        pList.__sizeof__()
+                        while i < pList.__sizeof__():
+                            queryList.insert(int(i), pList.fetchone())
+                            i = i + 1
+
                     except(sqlite3.OperationalError):
                         tkinter.messagebox.showerror('Query Error', 'Attention, The query you have entered is not valid!')
 
-        customQueryFrame = Frame(master, width=300, height=200, bg="gray")
+        customQueryFrame = Frame(master, width=300, height=400, bg="gray")
         customQueryFrame.pack()
         customQueryFrame.pack_propagate(0)
         customQueryLabel = Label(customQueryFrame, text="Enter a Custom Query: ", bg="gray")
@@ -391,12 +416,23 @@ class PaintsMain:
         queryButton = Button(customQueryFrame, text="Query", bg="gray")
         queryButton.bind("<Button-1>", query)
         queryButton.pack(pady=10)
+        returnButton = Button(customQueryFrame, text="Return")
+        returnButton.bind("<Button-1>", Return)
+        returnButton.pack(pady=11)
+        queryList = Listbox(customQueryFrame, bg="darkgray")
+        queryList.pack(pady=12)
+        #master.bind("<Return>", Return)
+
 
 
 #############################BELOW THIS POINT IS STILL BEING WORKED ON##################################################
 
 
     def newEmployeeScreen(master):
+        def Return(event):
+            time.sleep(.3)
+            newEmployeeFrame.destroy()
+            PaintsMain.menuScreen(master, PaintsMain.employeeName)
 
         def newEmployee(event):
             print("yay")
@@ -431,49 +467,76 @@ class PaintsMain:
         newTitleEntry.grid(row=3, column=1)
         newDepartmentEntry.grid(row=4, column=1)
         newEmployeeButton.grid(row=7, columnspan=2, pady=10)
+        returnButton = Button(newEmployeeFrame, text="Return")
+        returnButton.bind("<Button-1>", Return)
+        returnButton.grid(row=12, column=1)
 
     #NOT FINISHED---LINKED TO MENU
     def newOrderScreen(master):
-
+        def Return(event):
+            time.sleep(.3)
+            cursor.execute("DELETE FROM Prod_Cart")
+            connection.commit()
+            i = 0
+            paymentFrame.destroy()
+            PaintsMain.menuScreen(master, PaintsMain.employeeName)
+        def removeFromCart(event):
+            search = cart.get(cart.curselection())
+            mylist = str(search).split("'")
+            print(mylist)
+            checker = mylist[1]
+            print(checker)
+            price = cursor.execute('SELECT Prod_Price FROM Product WHERE Prod_SKU = "' + str(checker) + '"').fetchall()
+            qty = cursor.execute('SELECT Qty FROM Prod_Cart WHERE Prod_SKU = "' + str(checker) + '"').fetchall()
+            productList.insert(0, search)
+            cart.delete((cart.curselection())[0])
+            prodPrice = int(price[0][0]) * int(qty[0][0])
+            #print(prodPrice)
+            PaintsMain.currentPayment = PaintsMain.currentPayment - prodPrice
+            v.set(PaintsMain.currentPayment)
+            cursor.execute('DELETE FROM Prod_Cart WHERE Prod_SKU ="' + str(checker) + '"')
+            connection.commit()
         def addToCart(event):
             search=productList.get(productList.curselection())
-            cart.insert(0, search)
-            PaintsMain.total = int(PaintsMain.total)+1
-            PaintsMain.total=int(PaintsMain.total)+int(cursor.execute('SELECT Prod_Price FROM Product WHERE * = "'+str(search)+"").fetchall())
-            paymentTotalLabel = Label(paymentFrame, text=str(PaintsMain.total), bg="gray")
+            #productList.delete(productList.get(productList.curselection()))
+           # productList.delete((productList.curselection())[0])
+           # cart.insert(0, search)
+            mylist = str(search).split("'")
+            print(mylist)
+            checker = mylist[1]
+            print(checker)
+            price=cursor.execute('SELECT Prod_Price FROM Product WHERE Prod_SKU = "' + str(checker) + '"').fetchall()
+            qty=int(qtyEntry.get())
+            if isinstance( qty, int):
+                cart.insert(0, search)
+                productList.delete((productList.curselection())[0])
+                prodPrice=int(price[0][0])*int(qty)
+                print(prodPrice)
+                PaintsMain.currentPayment=PaintsMain.currentPayment+prodPrice
+                v.set(PaintsMain.currentPayment)
+                cursor.execute('INSERT INTO Prod_Cart (Prod_SKU, Qty) VALUES ("' + checker + '", "' + str(qty) + '")')
+                connection.commit()
+            #PaintsMain.total = int(PaintsMain.total)+1
+            #PaintsMain.total=int(PaintsMain.total)+int(prodPrice)
+            #paymentTotalLabel= Label(paymentFrame, text=str(PaintsMain.total), bg="gray")
+
            # cursor.execute('SELECT Prod_Price WHERE *="'+search+'')
 
         def makePayment(event):
-            paymentAmount = payment.get()
-            result = getResult()
-            if (paymentAmount == ""):
-                tkinter.messagebox.showerror('Blank Field(s) Error', 'Attention, You did not enter a payment amount!')
-            elif(isNumber(paymentAmount) == False):
-                tkinter.messagebox.showerror('Payment Error', 'Attention, The value you entered is not a number!')
-            else:
-                paymentAmount = float(paymentAmount)
-                answer = tkinter.messagebox.askquestion('Click Yes to Proceed', 'Are you sure this payment amount is correct?')
-                if (answer == 'yes'):
-                    adjustBalance = float(result[0][7])-paymentAmount
-                    if(paymentAmount<.01):
-                        tkinter.messagebox.showerror('Payment Error','Attention, The payment attempted was negative/zero!')
-                    elif(adjustBalance<0):
-                        tkinter.messagebox.showerror('Payment Error','Attention, The payment attempted was more than the balance!')
-                    else:
-                        currentBalance.set("$" + str(round(adjustBalance,2)))
-                        cursor.execute('UPDATE Customer SET Cust_Bal = "' + str(adjustBalance) + '" WHERE Cust_Code = "' + str(PaintsMain.currentCustomer) + '"')
-                        connection.commit()
-                        result=getResult()
-                        tkinter.messagebox.showinfo('Payment Success', 'Attention, The payment has succesfully been recorded!')
-                        customerInfoFrame.destroy()
-                        paymentFrame.destroy()
-
-
-                        #Create method for creating invoice number
-                        #
-                        #
-                       # cursor.execute('INSERT INTO Invoice (Inv_Number,Cust_Code,Inv_Date,Inv_Total,Inv_Terms,Pay_Made,Emp_Number) VALUES ("' + getInvoiceNum() + '","' + PaintsMain.currentCustomer + '","' + str(datetime.datetime.today()).split()[0] + '","' + PaintsMain.currentCustomer + '","' + PaintsMain.currentCustomer + '","' + PaintsMain.currentCustomer + '","' + PaintsMain.currentCustomer + '")')
-                        PaintsMain.invoiceFrame(master)
+            pList = cursor.execute('SELECT Prod_SKU FROM Prod_Cart')
+            i = 0
+            pList.__sizeof__()
+            Invoice_ID=cursor.execute('SELECT Inv_Number FROM Invoice').__sizeof__()
+            Invoice_ID=int(Invoice_ID)+1
+            while i < pList.__sizeof__():
+                #queryList.insert(int(i), pList.fetchone())
+                sku=(pList.fetchone())
+                qty=cursor.execute('SELECT Qty FROM Prod_Cart WHERE Prod_SKU="'+ str(sku) + '"').fetchone()
+                size=cursor.execute('SELECT Prod_SKU FROM Line')
+                Line_Num=int(size.__sizeof__())+1
+                cursor.execute('INSERT INTO Line (Inv_Number, Line_Number, Prod_SKU, Line_Quantity) VALUES ("' + str(Invoice_ID) + '", "' + str(Line_Num) + '", "' + str(sku) + '", "' + str(qty) + '")')
+                i = i + 1
+                connection.commit()
 
                          #PaintsMain.invoiceFrame(master)
 
@@ -490,14 +553,21 @@ class PaintsMain:
                     i=0
                 return j
 
-        paymentFrame = Frame(master, highlightbackground="red", highlightcolor="red",highlightthickness=1)
-        paymentFrame.pack(side=RIGHT, padx=10)
+        paymentFrame = Frame(master, highlightbackground="red", highlightcolor="red",highlightthickness=1, width=500, height=500)
+        paymentFrame.pack()
+        #paymentFrame.pack_propagate(0)
+
         cBalanceLabel = Label(paymentFrame, text="Balance: ")
-        cartLabel= Label(paymentFrame, text="Cart")
+        cartLabel= Label(paymentFrame, text="Cart:")
+        qtyLabel = Label(paymentFrame, text ="Qty:")
+        qty=0
+        qtyEntry = Entry(paymentFrame, textvariable=qty, width=10, bg="darkgray")
         currentBalance = StringVar()
         #currentBalance.set("$" + str(result[0][7]))
         queryLabel = Label(paymentFrame, text="Search")
+       # searchEntry = Entry(paymentFrame, textvariable=search, width=10, bg="darkgray")
         productList = Listbox(paymentFrame, bg="darkgray")
+
 
         pList=cursor.execute('SELECT * FROM Product')
         i=0
@@ -508,8 +578,8 @@ class PaintsMain:
         cart = Listbox(paymentFrame, bg="darkgray")
 
         productList.grid(row=1, sticky=W)
-        cartLabel.grid(row=2, sticky=W)
-        cart.grid(row=3, sticky=W)
+        cartLabel.grid(row=4, sticky=W)
+        cart.grid(row=5, sticky=W)
         cBalance = Label(paymentFrame, textvariable=currentBalance)
         payment = StringVar()
         paymentEntry = Entry(paymentFrame, textvariable=payment, width=10, bg="darkgray")
@@ -518,22 +588,32 @@ class PaintsMain:
         paymentDate = Label(paymentFrame, text=str(currentDate))
         addToCartButton = Button(paymentFrame, text="Add to cart", bg="gray")
         addToCartButton.bind("<Button-1>", addToCart)
-        master.bind("<Return>", addToCart)
+        removeFromCartButton = Button(paymentFrame, text="Remove", bg="gray")
+        removeFromCartButton.bind("<Button-1>", removeFromCart)
+        master.bind("<Return>", removeFromCart)
         makePaymentButton = Button(paymentFrame, text="Make Payment", bg="gray")
         makePaymentButton.bind("<Button-1>", makePayment)
         master.bind("<Return>", makePayment)
         paymentLabel = Label(paymentFrame, text="Payment: ")
         PaintsMain.total=0
-        paymentTotalLabel = Label(paymentFrame, text=str(PaintsMain.total), bg="gray")
-        addToCartButton.grid(row=4, sticky=W)
-        cBalanceLabel.grid(row=5, sticky=W)
-        cBalance.grid(row=6, sticky=E)
-        paymentLabel.grid(row=7, sticky=W)
-        paymentTotalLabel.grid(row=8, sticky=E)
-        paymentDateLabel.grid(row=9, sticky=W)
-        paymentDate.grid(row=10, sticky=E)
+        v=StringVar()
+        v.set(PaintsMain.currentPayment)
+        paymentTotalLabel = Label(paymentFrame, textvariable=v, bg="gray")
+        addToCartButton.grid(row=3, sticky=W)
+        removeFromCartButton.grid(row=3, sticky=E)
+        qtyLabel.grid(row=2, sticky=W)
+        qtyEntry.grid(row=2, sticky=E)
+        cBalanceLabel.grid(row=6, sticky=W)
+        cBalance.grid(row=7, sticky=E)
+        paymentLabel.grid(row=8, sticky=W)
+        paymentTotalLabel.grid(row=9, sticky=E)
+        paymentDateLabel.grid(row=10, sticky=W)
+        paymentDate.grid(row=11, sticky=E)
         queryLabel.grid(row=0, sticky=W)
-        makePaymentButton.grid(row=11, padx=5, pady=15)
+        makePaymentButton.grid(row=12, padx=5, pady=15)
+        returnButton = Button(paymentFrame, text="Return")
+        returnButton.bind("<Button-1>", Return)
+        returnButton.grid(row=13, column=1)
 
     #NOT FINISHED
     def invoiceFrame(master):
@@ -571,4 +651,5 @@ root.title('Paints R Us')
 root.geometry("300x200")
 root.config(background="gray")
 b = PaintsMain(root)
+root.mainloop()
 root.mainloop()
