@@ -1,4 +1,4 @@
-from tkinter import *
+ from tkinter import *
 import tkinter as tk
 import tkinter.messagebox
 import sqlite3
@@ -478,6 +478,7 @@ class PaintsMain:
             cursor.execute("DELETE FROM Prod_Cart")
             connection.commit()
             i = 0
+            PaintsMain.currentPayment = 0
             paymentFrame.destroy()
             PaintsMain.menuScreen(master, PaintsMain.employeeName)
         def removeFromCart(event):
@@ -523,29 +524,49 @@ class PaintsMain:
            # cursor.execute('SELECT Prod_Price WHERE *="'+search+'')
 
         def makePayment(event):
-            pList = cursor.execute('SELECT Prod_SKU FROM Prod_Cart')
+            answer = tkinter.messagebox.askquestion('Click Yes to Proceed','Confirm order')
+            if answer=='no':
+                return
+            pList = cursor.execute('SELECT Prod_SKU FROM Prod_Cart').fetchall()
             i = 0
-            pList.__sizeof__()
-            Invoice_ID=cursor.execute('SELECT Inv_Number FROM Invoice').__sizeof__()
+            print(pList)
+            #pList.__sizeof__()
+            Invoice_ID=len(cursor.execute('SELECT Inv_Number FROM Invoice').fetchall())
             Invoice_ID=int(Invoice_ID)+1
-            while i < pList.__sizeof__():
-                #queryList.insert(int(i), pList.fetchone())
-                sku=(pList.fetchone())
-                qty=cursor.execute('SELECT Qty FROM Prod_Cart WHERE Prod_SKU="'+ str(sku) + '"').fetchone()
+            Line_Num=0
+            print("Invoice_ID")
+            print(Invoice_ID)
+            while i < len(pList):
+                skuList=pList
+                sku=str(skuList[i])
+                sku = str(skuList[i]).split("'")
+                print("SKU")
+                print(sku)
+                print("SKU")
+                print(sku[1])
+                qty=cursor.execute('SELECT Qty FROM Prod_Cart WHERE Prod_SKU="'+ str(sku[1]) + '"').fetchone()
+                print(str(qty))
+                print(str(qty).split("(")[1].split(",)"))
+                print(str(qty).split("(")[1].split(",)")[0])
+                qty=str(qty).split("(")[1].split(",)")[0]
                 size=cursor.execute('SELECT Prod_SKU FROM Line')
-                Line_Num=int(size.__sizeof__())+1
-                cursor.execute('INSERT INTO Line (Inv_Number, Line_Number, Prod_SKU, Line_Quantity) VALUES ("' + str(Invoice_ID) + '", "' + str(Line_Num) + '", "' + str(sku) + '", "' + str(qty) + '")')
+                cursor.execute('INSERT INTO Line (Inv_Number, Line_Number, Prod_SKU, Line_Quantity) VALUES ("' + str(Invoice_ID) + '", "' + str(Line_Num) + '", "' + str(sku[1]) + '", "' + str(qty) + '")')
                 i = i + 1
+                Line_Num=Line_Num+1
                 connection.commit()
-
-                         #PaintsMain.invoiceFrame(master)
+            PaintsMain.currentPayment = 0
+            cursor.execute('DELETE FROM Prod_Cart')
+            connection.commit()
+            PaintsMain.currentPayment = 0
+            cursor.execute('INSERT INTO Invoice (Inv_Number, Cust_Code, Inv_Date, Inv_Total, Inv_Terms, Pay_Made, Emp_Number) VALUES ("' + str(Invoice_ID) + '", "' + str(PaintsMain.currentCustomer) + '", "' + str(datetime.datetime.today().strftime('%Y-%m-%d')) + '", "' + str(PaintsMain.currentPayment) + '", "Norm", "False" , "' + str(PaintsMain.currentEmployee) + '")')
+            connection.commit()
+            tkinter.messagebox.showinfo('Order made!', 'Order made, Return to menu')
+            Return(master)
 
         def getInvoiceNum():
             check_InvNum=cursor.execute('SELECT Inv_Number FROM Invoice')
-            #check_InvNum.fetchone()
             i=0
             j=0
-            #check_InvNum.
             while i != check_InvNum.arraysize:
                 j = j + 1
                 if j == check_InvNum.fetchone():
@@ -563,9 +584,7 @@ class PaintsMain:
         qty=0
         qtyEntry = Entry(paymentFrame, textvariable=qty, width=10, bg="darkgray")
         currentBalance = StringVar()
-        #currentBalance.set("$" + str(result[0][7]))
         queryLabel = Label(paymentFrame, text="Search")
-       # searchEntry = Entry(paymentFrame, textvariable=search, width=10, bg="darkgray")
         productList = Listbox(paymentFrame, bg="darkgray")
 
 
