@@ -8,7 +8,7 @@ import datetime
 connection = sqlite3.connect('PaintsRUs.db')
 cursor = connection.cursor()
 
-#Main class/UI for software
+"""Main class/UI for software"""
 class PaintsMain:
     currentPayment = 0
     currentEmployee = -1
@@ -16,10 +16,15 @@ class PaintsMain:
     currentCustomer = -1
     employeeName="blank"
     total=0
-    #FINISHED, DO NOT TOUCH
+
+    """When program runs, this method is ran automatically, creating the login screen"""
     def __init__(self, master):
 
-        #When submit button is clicked, Username and Password values are retrieved from 'PaintsRUs.db' to see if they exist
+        """When submit button is clicked, Username and Password values are retrieved from 'PaintsRUs.db' to see if they
+        exist, if they don't exist, an error window pops up, if they do, the global variable @currentEmployee and
+        @currentDept are set to the corresponding values for later use. The login frame is then destroyed and the menu
+         screen is called. For the sake of show, the username and password of this system is set as the first and last
+         name of the employees."""
         def submit(event):
             time.sleep(.1)
             usernameValue = str(username.get())
@@ -36,7 +41,8 @@ class PaintsMain:
                 loginFrame.destroy()
                 PaintsMain.menuScreen(master)
 
-        # Building loginScreen Components
+        """Below the login screen is being put together with all necessary labels and entries. @username stores the entry 
+        for Username and @password stores the entry for the password."""
         loginFrame = Frame(master, width = 300, height = 200, bg="gray")
         loginFrame.pack(pady=25)
         loginFrame.pack_propagate(0)
@@ -47,7 +53,7 @@ class PaintsMain:
         nameEntry = Entry(loginFrame, textvariable = username, bg="darkgray")
         password = StringVar()
         passEntry = Entry(loginFrame, textvariable = password, bg="darkgray")
-        passEntry.config(show="*");
+        passEntry.config(show="*")
         loginButton = Button(loginFrame, text="Login")
         loginButton.bind("<Button-1>", submit)
         master.bind("<Return>", submit)
@@ -58,9 +64,11 @@ class PaintsMain:
         passEntry.grid(row=2, column=1)
         loginButton.grid(row=3, columnspan = 2, pady=12)
 
-    #FINISHED, DO NOT TOUCH
+    """After a succesful login, the menu screen is called"""
     def menuScreen(master):
 
+        """When go button is clicked, the value for which it possesses is accounted for and the appropriate screen is
+        chosen. (ONLY MANAGERS CAN ACCESS "Create new employee" AND "Create custom query")"""
         def goToPage(event):
             currentGo = menuList.get(menuList.curselection())
             master.unbind("<Return>")
@@ -89,12 +97,16 @@ class PaintsMain:
                 menuFrame.destroy()
                 PaintsMain.lookupInvoiceScreen(master)
 
+        """Used in aid to determine whether employee is a manager, if so, user gets 6 choices, if not, user gets 4."""
         def size():
             if(PaintsMain.currentDept==3):
                 return 6
             else:
                 return 4
 
+        """Below the menu screen is being put together with all necessary attributes. The list of screens is being 
+        assembles based upon the department from which the user is from. If they are from the managerial department
+        i.e 3, they get access to two extra screens."""
         master.unbind("<Escape>")
         menuFrame = Frame(master, width=300, height=200, bg="gray")
         menuFrame.pack(pady=10)
@@ -111,7 +123,6 @@ class PaintsMain:
             menuList.insert(6, 'Create New Employee')
         goButton = Button(menuFrame, text="Go To Screen")
         goButton.bind("<Button-1>", goToPage)
-
         master.bind("<Return>", goToPage)
         questionLabel.grid(row=0, columnspan = 2, pady=10)
         menuList.grid(rowspan=2, sticky=W)
@@ -119,9 +130,12 @@ class PaintsMain:
         returnLabel = Label(menuFrame, text="Press 'Esc' key to return to this menu!",bg="gray")
         returnLabel.grid(row=3, columnspan=2, pady=5)
 
-    #FINISHED, DO NOT TOUCH
+    """This screen allows the user to search for a customer in the database through id or first and last name. If the 
+    customer is found, the user is taken to a succeeding screen and global variable @currentCustomer is set accordingly.
+    If not, an error message pops up."""
     def customerLookupScreen(master):
 
+        """Basic return mechanism when escape key is pressed"""
         def Return(event):
             time.sleep(.3)
             customerLookupFrame.destroy()
@@ -129,7 +143,11 @@ class PaintsMain:
 
         master.bind("<Escape>", Return)
 
-        def searchCustomer(event):#ERROr PaintsMain.currentCustomer = int(result[0][0]) IndexError: list index out of range
+        """When the search button is clicked, the values in the entry form are assigned and errors are checked. Default 
+        search is by id, if no id is given then the first and last name is searched. If a customer is found the frame is
+        destroyed and the user is taken to the customer info screen. If no customer is found and error message is
+        displayed."""
+        def searchCustomer(event):
             idValue = str(customerID.get())
             firstNameValue = str(firstName.get())
             lastNameValue = str(lastName.get())
@@ -137,7 +155,7 @@ class PaintsMain:
                 tkinter.messagebox.showerror('Blank Field(s) Error', 'Attention, You must fill the required fields!')
             else:
                 if(idValue != ""):
-                    cursor.execute('SELECT * FROM Customer WHERE Cust_Code = "' + idValue + '"')# + '" AND Password = "' + passwordValue + '"')
+                    cursor.execute('SELECT * FROM Customer WHERE Cust_Code = "' + idValue + '"')
                     result = cursor.fetchall()
                     if(str(result) == "[]"):
                         tkinter.messagebox.showerror('Incorrect ID','Attention, The ID you\'ve entered was not found!')
@@ -153,7 +171,8 @@ class PaintsMain:
                     customerLookupFrame.destroy()
                     PaintsMain.customerInfoScreen(master)
 
-        #Building customerLookupScreen Components
+        """Below the lookup frame is being assembled with all necessary parts. @customerID is used to hold the entered
+        customer id, @firstName is used to hold the first name given, @lastName is used to hold the last name given."""
         customerLookupFrame = Frame(master, width=300, height=200, bg="gray")
         customerLookupFrame.pack(pady=5)
         customerLookupFrame.pack_propagate(0)
@@ -181,9 +200,11 @@ class PaintsMain:
         lastNameEntry.grid(row=4, column=1)
         searchButton.grid(row=5, columnspan=2, pady=10)
 
-    #FINISHED, DO NOT TOUCH
+    """This screen allows the user to add a new customer to the system. If added, balance is set to zero by default and 
+    global variable @currentCustomer is set accordingly."""
     def newCustomerScreen(master):
 
+        """Basic return mechanism when escape key is pressed"""
         def Return(event):
             time.sleep(.3)
             newCustomerFrame.destroy()
@@ -191,6 +212,9 @@ class PaintsMain:
 
         master.bind("<Escape>", Return)
 
+        """When the create button is clicked, the values are stored in variables and a query is executed. If a customer 
+        with those credentials is found, an error is displayed, if not, the customer is added and the user istaken to 
+        their info screen."""
         def newCustomer(event):
             newFirstNameValue = str(newFirstName.get())
             newLastNameValue = str(newLastName.get())
@@ -222,7 +246,8 @@ class PaintsMain:
                         newCustomerFrame.destroy()
                         PaintsMain.customerInfoScreen(master)
 
-        #Building newCustomerScreen Components
+        """Below, the new customer screen is being assembled with all necessary components for the form. Each field has
+        its own variable to store (First name, last name, Street, City, State, Zip)"""
         newCustomerFrame = Frame(master, width=300, height=200, bg="gray")
         newCustomerFrame.pack()
         newCustomerFrame.pack_propagate(0)
@@ -263,9 +288,11 @@ class PaintsMain:
         newZipEntry.grid(row=6, column=1)
         newCustomerButton.grid(row=7, columnspan=2, pady=10)
 
-    #FINISHED, DO NOT TOUCH
+    """This screen allows the user to view a customers credentials and also their balance. There is also a function
+    to make a payment on their balance."""
     def customerInfoScreen(master):
 
+        """Basic return mechanism when escape key is pressed"""
         def Return(event):
             time.sleep(.3)
             customerInfoFrame.destroy()
@@ -274,6 +301,9 @@ class PaintsMain:
 
         master.bind("<Escape>", Return)
 
+        """When the make payment button is pressed, the value from the field is stored in a variable. It is checkeed to 
+        make sure that it is a number, and that it is <= the balance. If both conditions are met, the payment is then
+        processed."""
         def makePayment(event):
             paymentAmount = payment.get()
             result = getResult()
@@ -297,10 +327,12 @@ class PaintsMain:
                         result = getResult()
                         tkinter.messagebox.showinfo('Payment Success','Attention, The payment has succesfully been recorded!')
 
+        """Queries the database for the customer it is currently going to display."""
         def getResult():
             cursor.execute('SELECT * FROM Customer WHERE Cust_Code = "' + str(PaintsMain.currentCustomer) + '"')
             return cursor.fetchall()
 
+        """Determines whether the payment entry is actually a number"""
         def isNumber(n):
             try:
                 float(n)
@@ -308,6 +340,8 @@ class PaintsMain:
             except ValueError:
                 return False
 
+        """Below, the info frame is being assembled with all necessary fields resulting from the query done in either
+        the lookup customer, or create customer screen."""
         customerInfoFrame = Frame(master, width=300, height=200, bg="gray")
         customerInfoFrame.pack(side=LEFT, padx=4)
         customerInfoFrame.pack_propagate(0)
@@ -343,6 +377,8 @@ class PaintsMain:
         cState.grid(row=6, column=1, sticky=W)
         cZip.grid(row=7, column=1, sticky=W)
 
+        """Below, the payment frame is being assembled with the necessary parts. This frame sits right next to the info
+        frame on the screen. This gives balance and has an entry to make a payment."""
         paymentFrame = Frame(master, highlightbackground="red", highlightcolor="red", highlightthickness=1)
         paymentFrame.pack(side=RIGHT, padx=2)
         cBalanceLabel = Label(paymentFrame, text="Balance: ")
@@ -366,9 +402,10 @@ class PaintsMain:
         paymentDate.grid(row=5, sticky=E)
         makePaymentButton.grid(row=6, padx=3, pady=15)
 
-    #FINISHED, DO NOT TOUCH
+    """This screen allows for a manager to enter a custom query into the database and relays the results"""
     def customQueryScreen(master):
 
+        """Basic return mechanism when escape key is pressed"""
         def Return(event):
             time.sleep(.3)
             customQueryFrame.destroy()
@@ -376,6 +413,8 @@ class PaintsMain:
 
         master.bind("<Escape>", Return)
 
+        """When the submit query button is clicked, the query is taken from the field and is entered. If the query is a
+        valid query, the results from it are shown in a popup window generated, if not, an error window appears."""
         def query(event):#NEED TO HANDLE ERROR WHEN ENTER KEY IS QUERYED
             enteredQuery = customQueryEntry.get("1.0", 'end-1c')
             if(enteredQuery == ""):
@@ -408,6 +447,8 @@ class PaintsMain:
                     except(sqlite3.OperationalError):
                         tkinter.messagebox.showerror('Query Error', 'Attention, The query you have entered is not valid!')
 
+        """Below, the custom query frame is being assembled with the necessary parts with the query entry being stored
+        in the @customQuery variable."""
         customQueryFrame = Frame(master, width=300, height=200, bg="gray")
         customQueryFrame.pack()
         customQueryFrame.pack_propagate(0)
@@ -421,9 +462,11 @@ class PaintsMain:
         master.bind("<Return>", query)
         queryButton.pack(pady=10)
 
-    #FINISHED, DO NOT TOUCH
+    """The new employee screen allows for only managers to create a new employee in the system, which adds them to the
+    database."""
     def newEmployeeScreen(master):
 
+        """Basic return mechanism when escape key is pressed"""
         def Return(event):
             time.sleep(.3)
             newEmployeeFrame.destroy()
@@ -431,6 +474,9 @@ class PaintsMain:
 
         master.bind("<Escape>", Return)
 
+        """When the create button is clicked, the values in the entries are retrieved and a query is made to determine
+        if the employee is existing or not. If it is not, another query is made and the new employees credentials are
+        entered. The phone and start date is preset and entered also."""
         def newEmployee(event):
             newFirstNameValue = str(newFirstName.get())
             newLastNameValue = str(newLastName.get())
@@ -462,6 +508,8 @@ class PaintsMain:
                             newEmployeeFrame.destroy()
                             PaintsMain.menuScreen(master)
 
+        """Below, the new employee screen is being assembled with all necessary parts. Each entry is stored in an according
+        variable for (First name, last name, title, and department."""
         newEmployeeFrame = Frame(master, width=300, height=200, bg="gray")
         newEmployeeFrame.pack()
         newEmployeeFrame.pack_propagate(0)
@@ -492,7 +540,7 @@ class PaintsMain:
         newDepartmentEntry.grid(row=4, column=1)
         newEmployeeButton.grid(row=7, columnspan=2, pady=10)
 
-    #FINISHED, DO NOT TOUCH
+    #NOT FINISHED#############################################################################################
     def newOrderScreen(master):
         def Return(event):
             time.sleep(.3)
@@ -501,14 +549,15 @@ class PaintsMain:
             i = 0
             PaintsMain.currentPayment = 0
             paymentFrame.destroy()
+            master.geometry("300x200")
             PaintsMain.menuScreen(master)
+
+        master.bind("<Escape>", Return)
 
         def removeFromCart(event):
             search = cart.get(cart.curselection())
             mylist = str(search).split("'")
-            print(mylist)
             checker = mylist[1]
-            print(checker)
             price = cursor.execute('SELECT Prod_Price FROM Product WHERE Prod_SKU = "' + str(checker) + '"').fetchall()
             qty = cursor.execute('SELECT Qty FROM Prod_Cart WHERE Prod_SKU = "' + str(checker) + '"').fetchall()
             productList.insert(0, search)
@@ -522,16 +571,13 @@ class PaintsMain:
         def addToCart(event):
             search=productList.get(productList.curselection())
             mylist = str(search).split("'")
-            print(mylist)
             checker = mylist[1]
-            print(checker)
             price=cursor.execute('SELECT Prod_Price FROM Product WHERE Prod_SKU = "' + str(checker) + '"').fetchall()
             qty=int(qtyEntry.get())
             if isinstance( qty, int):
                 cart.insert(0, search)
                 productList.delete((productList.curselection())[0])
                 prodPrice=int(price[0][0])*int(qty)
-                print(prodPrice)
                 PaintsMain.currentPayment=PaintsMain.currentPayment+prodPrice
                 v.set(PaintsMain.currentPayment)
                 cursor.execute('INSERT INTO Prod_Cart (Prod_SKU, Qty) VALUES ("' + checker + '", "' + str(qty) + '")')
@@ -543,25 +589,14 @@ class PaintsMain:
                 return
             pList = cursor.execute('SELECT Prod_SKU FROM Prod_Cart').fetchall()
             i = 0
-            print(pList)
-            #pList.__sizeof__()
             Invoice_ID=len(cursor.execute('SELECT Inv_Number FROM Invoice').fetchall())
             Invoice_ID=int(Invoice_ID)+1
             Line_Num=0
-            print("Invoice_ID")
-            print(Invoice_ID)
             while i < len(pList):
                 skuList=pList
                 sku=str(skuList[i])
                 sku = str(skuList[i]).split("'")
-                print("SKU")
-                print(sku)
-                print("SKU")
-                print(sku[1])
                 qty=cursor.execute('SELECT Qty FROM Prod_Cart WHERE Prod_SKU="'+ str(sku[1]) + '"').fetchone()
-                print(str(qty))
-                print(str(qty).split("(")[1].split(",)"))
-                print(str(qty).split("(")[1].split(",)")[0])
                 qty=str(qty).split("(")[1].split(",)")[0]
                 size=cursor.execute('SELECT Prod_SKU FROM Line')
                 cursor.execute('INSERT INTO Line (Inv_Number, Line_Number, Prod_SKU, Line_Quantity) VALUES ("' + str(Invoice_ID) + '", "' + str(Line_Num) + '", "' + str(sku[1]) + '", "' + str(qty) + '")')
@@ -574,7 +609,7 @@ class PaintsMain:
             PaintsMain.currentPayment = 0
             cursor.execute('INSERT INTO Invoice (Inv_Number, Cust_Code, Inv_Date, Inv_Total, Inv_Terms, Pay_Made, Emp_Number) VALUES ("' + str(Invoice_ID) + '", "' + str(PaintsMain.currentCustomer) + '", "' + str(datetime.datetime.today().strftime('%Y-%m-%d')) + '", "' + str(PaintsMain.currentPayment) + '", "Norm", "False" , "' + str(PaintsMain.currentEmployee) + '")')
             connection.commit()
-            tkinter.messagebox.showinfo('Order made!', 'Order made, Return to menu')
+            tkinter.messagebox.showinfo('Order made!', 'Order made, Returning to main menu!')
             Return(master)
 
         def getInvoiceNum():
@@ -588,7 +623,7 @@ class PaintsMain:
                     i=0
                 return j
 
-        master.geometry("500x700")
+        master.geometry("500x600")
         paymentFrame = Frame(master, highlightbackground="red", highlightcolor="red",highlightthickness=1, width=500, height=500)
         paymentFrame.pack()
         cBalanceLabel = Label(paymentFrame, text="Balance: ")
@@ -620,10 +655,10 @@ class PaintsMain:
         removeFromCartButton = Button(paymentFrame, text="Remove", bg="gray")
         removeFromCartButton.bind("<Button-1>", removeFromCart)
         master.bind("<Return>", removeFromCart)
-        makePaymentButton = Button(paymentFrame, text="Make Payment", bg="gray")
+        makePaymentButton = Button(paymentFrame, text="Submit Order", bg="gray")
         makePaymentButton.bind("<Button-1>", makePayment)
         master.bind("<Return>", makePayment)
-        paymentLabel = Label(paymentFrame, text="Payment: ")
+        paymentLabel = Label(paymentFrame, text="Total Cost: ")
         PaintsMain.total=0
         v=StringVar()
         v.set(PaintsMain.currentPayment)
@@ -640,13 +675,11 @@ class PaintsMain:
         paymentDate.grid(row=11, sticky=E)
         queryLabel.grid(row=0, sticky=W)
         makePaymentButton.grid(row=12, padx=5, pady=15)
-        returnButton = Button(paymentFrame, text="Return")
-        returnButton.bind("<Button-1>", Return)
-        returnButton.grid(row=13, column=1)
 
-    #NOT FINISHED
+    """This screen allows employees to search an invoice by number and have it displayed."""
     def lookupInvoiceScreen(master):
 
+        """Basic return mechanism when escape key is pressed"""
         def Return(event):
             time.sleep(.3)
             lookupInvoiceFrame.destroy()
@@ -654,6 +687,9 @@ class PaintsMain:
 
         master.bind("<Escape>", Return)
 
+        """When the lookup invoice button is clicked the value from the field is retrieved and a query is made to the
+        invoice table to see if it exists. If it doesnt exist, an error appears, if it does, the generate invoice method
+        is called."""
         def searchInvoice(event):
             idValue = str(invoiceID.get())
             if(idValue == ""):
@@ -667,6 +703,9 @@ class PaintsMain:
                     else:
                         generateInvoice(result)
 
+        """When an invoice is found, this method uses the invoicew number to find all relating records from the line table.
+        The results are then displayed on a popup screen in a list along with the customer code, invoice number, and 
+        invoice total for the current invoice."""
         def generateInvoice(r):
             currentInvoice = Tk()
             currentInvoice.title('Invoice ' + str(r[0][0]))
@@ -694,6 +733,8 @@ class PaintsMain:
             lineList.grid(row=1, columnspan=3, pady=5)
             currentInvoice.mainloop()
 
+        """Below, the lookup invoice frame is being assembled with the necessary parts. The invoice id is stored in the 
+        @invoiceID variable."""
         lookupInvoiceFrame = Frame(master, width=300, height=200, bg="gray")
         lookupInvoiceFrame.pack(pady=25)
         lookupInvoiceFrame.pack_propagate(0)
