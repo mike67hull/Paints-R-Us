@@ -1,4 +1,7 @@
 from tkinter import *
+
+
+from tkinter import *
 import tkinter.messagebox
 import sqlite3
 import time
@@ -10,21 +13,22 @@ cursor = connection.cursor()
 
 """Main class/UI for software"""
 class PaintsMain:
+    g=0
+    r=0
     currentPayment = 0
     currentEmployee = -1
     currentDept = -1
     currentCustomer = -1
     employeeName="blank"
     total=0
-
     """When program runs, this method is ran automatically, creating the login screen"""
     def __init__(self, master):
 
         """When submit button is clicked, Username and Password values are retrieved from 'PaintsRUs.db' to see if they
         exist, if they don't exist, an error window pops up, if they do, the global variable @currentEmployee and
         @currentDept are set to the corresponding values for later use. The login frame is then destroyed and the menu
-         screen is called. For the sake of show, the username and password of this system is set as the first and last
-         name of the employees."""
+        screen is called. For the sake of show, the username and password of this system is set as the first and last
+        name of the employees."""
         def submit(event):
             time.sleep(.1)
             usernameValue = str(username.get())
@@ -53,7 +57,7 @@ class PaintsMain:
         nameEntry = Entry(loginFrame, textvariable = username, bg="darkgray")
         password = StringVar()
         passEntry = Entry(loginFrame, textvariable = password, bg="darkgray")
-        passEntry.config(show="*")
+        passEntry.config(show="*");
         loginButton = Button(loginFrame, text="Login")
         loginButton.bind("<Button-1>", submit)
         master.bind("<Return>", submit)
@@ -105,8 +109,8 @@ class PaintsMain:
                 return 4
 
         """Below the menu screen is being put together with all necessary attributes. The list of screens is being 
-        assembles based upon the department from which the user is from. If they are from the managerial department
-        i.e 3, they get access to two extra screens."""
+            assembles based upon the department from which the user is from. If they are from the managerial department
+            i.e 3, they get access to two extra screens."""
         master.unbind("<Escape>")
         menuFrame = Frame(master, width=300, height=200, bg="gray")
         menuFrame.pack(pady=10)
@@ -116,7 +120,8 @@ class PaintsMain:
         menuList.insert(1, 'Lookup Customer')
         menuList.insert(2, 'Add New Customer')
         menuList.insert(3, 'Lookup Invoice')
-        menuList.insert(4, 'Create New Order')
+        if(PaintsMain.currentCustomer!=-1):
+            menuList.insert(4, 'Create New Order')
         if(PaintsMain.currentDept==3):
             #menuList.insert(5, 'Generate Report')
             menuList.insert(5, 'Create Custom Query')
@@ -132,7 +137,7 @@ class PaintsMain:
 
     """This screen allows the user to search for a customer in the database through id or first and last name. If the 
     customer is found, the user is taken to a succeeding screen and global variable @currentCustomer is set accordingly.
-    If not, an error message pops up."""
+    if not, an error message pops up."""
     def customerLookupScreen(master):
 
         """Basic return mechanism when escape key is pressed"""
@@ -145,9 +150,8 @@ class PaintsMain:
 
         """When the search button is clicked, the values in the entry form are assigned and errors are checked. Default 
         search is by id, if no id is given then the first and last name is searched. If a customer is found the frame is
-        destroyed and the user is taken to the customer info screen. If no customer is found and error message is
-        displayed."""
-        def searchCustomer(event):
+        destroyed and the user is taken to the customer info screen. If no customer is found and error message is displayed."""
+        def searchCustomer(event):#ERROr PaintsMain.currentCustomer = int(result[0][0]) IndexError: list index out of range
             idValue = str(customerID.get())
             firstNameValue = str(firstName.get())
             lastNameValue = str(lastName.get())
@@ -155,7 +159,7 @@ class PaintsMain:
                 tkinter.messagebox.showerror('Blank Field(s) Error', 'Attention, You must fill the required fields!')
             else:
                 if(idValue != ""):
-                    cursor.execute('SELECT * FROM Customer WHERE Cust_Code = "' + idValue + '"')
+                    cursor.execute('SELECT * FROM Customer WHERE Cust_Code = "' + idValue + '"')# + '" AND Password = "' + passwordValue + '"')
                     result = cursor.fetchall()
                     if(str(result) == "[]"):
                         tkinter.messagebox.showerror('Incorrect ID','Attention, The ID you\'ve entered was not found!')
@@ -404,7 +408,6 @@ class PaintsMain:
 
     """This screen allows for a manager to enter a custom query into the database and relays the results"""
     def customQueryScreen(master):
-
         """Basic return mechanism when escape key is pressed"""
         def Return(event):
             time.sleep(.3)
@@ -540,7 +543,8 @@ class PaintsMain:
         newDepartmentEntry.grid(row=4, column=1)
         newEmployeeButton.grid(row=7, columnspan=2, pady=10)
 
-    #NOT FINISHED#############################################################################################
+    """screen for taking orders, which are then transferred into invoices. 
+    The screen  is compised of a selection of items and cart."""
     def newOrderScreen(master):
         def Return(event):
             time.sleep(.3)
@@ -549,15 +553,71 @@ class PaintsMain:
             i = 0
             PaintsMain.currentPayment = 0
             paymentFrame.destroy()
-            master.geometry("300x200")
             PaintsMain.menuScreen(master)
-
-        master.bind("<Escape>", Return)
-
+        """Used to filter the items in the selection screen, either by SKU, BrandID, or Type"""
+        def filter(event):
+            print("THIS THING")
+            if search.get()=="":
+                tkinter.messagebox.showerror('Query Error', 'Attention, The query you have entered is not valid!')
+                return
+            if variable.get()=="SKU":
+                try:
+                    print(search.get())
+                    cursor.execute('SELECT * FROM Product WHERE Prod_SKU = "' +str(search.get())+ '"')
+                    pList=cursor.fetchall()
+                    print(len(pList))
+                    if len(pList)>0:
+                        while productList.size() > 0:
+                            print("THIS THINGy")
+                            productList.delete(0)
+                        i = 0
+                        while i < len(pList):
+                            productList.insert(int(i), pList[i])
+                            i = i + 1
+                except(sqlite3.OperationalError):
+                    tkinter.messagebox.showerror('Query Error', 'Attention, The query you have entered is not valid!')
+                    return
+            if variable.get() == "BrandID":
+                try:
+                    print(search.get())
+                    cursor.execute('SELECT * FROM Product WHERE Brand_ID = "' + str(search.get()) + '"')
+                    pList = cursor.fetchall()
+                    print(len(pList))
+                    if len(pList) > 0:
+                        while productList.size() > 0:
+                            print("THIS THINGy")
+                            productList.delete(0)
+                        i = 0
+                        while i < len(pList):
+                            productList.insert(int(i), pList[i])
+                            i = i + 1
+                except(sqlite3.OperationalError):
+                    tkinter.messagebox.showerror('Query Error', 'Attention, The query you have entered is not valid!')
+                    return
+            if variable.get() == "Type":
+                try:
+                    print(search.get())
+                    cursor.execute('SELECT * FROM Product WHERE Prod_Type = "' + str(search.get()) + '"')
+                    pList = cursor.fetchall()
+                    print(len(pList))
+                    if len(pList) > 0:
+                        while productList.size() > 0:
+                            print("THIS THINGy")
+                            productList.delete(0)
+                        i = 0
+                        while i < len(pList):
+                            productList.insert(int(i), pList[i])
+                            i = i + 1
+                except(sqlite3.OperationalError):
+                    tkinter.messagebox.showerror('Query Error', 'Attention, The query you have entered is not valid!')
+                    return
+        """When remove from cart button is pressed the selected item gets removed and placed back into the selection screen"""
         def removeFromCart(event):
             search = cart.get(cart.curselection())
             mylist = str(search).split("'")
+            print(mylist)
             checker = mylist[1]
+            print(checker)
             price = cursor.execute('SELECT Prod_Price FROM Product WHERE Prod_SKU = "' + str(checker) + '"').fetchall()
             qty = cursor.execute('SELECT Qty FROM Prod_Cart WHERE Prod_SKU = "' + str(checker) + '"').fetchall()
             productList.insert(0, search)
@@ -567,36 +627,50 @@ class PaintsMain:
             v.set(PaintsMain.currentPayment)
             cursor.execute('DELETE FROM Prod_Cart WHERE Prod_SKU ="' + str(checker) + '"')
             connection.commit()
-
+        """Takes the current selection, selected qty, and places it into the cart"""
         def addToCart(event):
             search=productList.get(productList.curselection())
             mylist = str(search).split("'")
+            print(mylist)
             checker = mylist[1]
+            print(checker)
             price=cursor.execute('SELECT Prod_Price FROM Product WHERE Prod_SKU = "' + str(checker) + '"').fetchall()
             qty=int(qtyEntry.get())
             if isinstance( qty, int):
                 cart.insert(0, search)
                 productList.delete((productList.curselection())[0])
                 prodPrice=int(price[0][0])*int(qty)
+                print(prodPrice)
                 PaintsMain.currentPayment=PaintsMain.currentPayment+prodPrice
                 v.set(PaintsMain.currentPayment)
                 cursor.execute('INSERT INTO Prod_Cart (Prod_SKU, Qty) VALUES ("' + checker + '", "' + str(qty) + '")')
                 connection.commit()
-
+        """Final step in making an order, takes items in the cart and creates invoice lines for each. Returns to main menu when complete"""
         def makePayment(event):
             answer = tkinter.messagebox.askquestion('Click Yes to Proceed','Confirm order')
             if answer=='no':
                 return
             pList = cursor.execute('SELECT Prod_SKU FROM Prod_Cart').fetchall()
             i = 0
+            print(pList)
+            #pList.__sizeof__()
             Invoice_ID=len(cursor.execute('SELECT Inv_Number FROM Invoice').fetchall())
             Invoice_ID=int(Invoice_ID)+1
             Line_Num=0
+            print("Invoice_ID")
+            print(Invoice_ID)
             while i < len(pList):
                 skuList=pList
                 sku=str(skuList[i])
                 sku = str(skuList[i]).split("'")
+                print("SKU")
+                print(sku)
+                print("SKU")
+                print(sku[1])
                 qty=cursor.execute('SELECT Qty FROM Prod_Cart WHERE Prod_SKU="'+ str(sku[1]) + '"').fetchone()
+                print(str(qty))
+                print(str(qty).split("(")[1].split(",)"))
+                print(str(qty).split("(")[1].split(",)")[0])
                 qty=str(qty).split("(")[1].split(",)")[0]
                 size=cursor.execute('SELECT Prod_SKU FROM Line')
                 cursor.execute('INSERT INTO Line (Inv_Number, Line_Number, Prod_SKU, Line_Quantity) VALUES ("' + str(Invoice_ID) + '", "' + str(Line_Num) + '", "' + str(sku[1]) + '", "' + str(qty) + '")')
@@ -609,9 +683,9 @@ class PaintsMain:
             PaintsMain.currentPayment = 0
             cursor.execute('INSERT INTO Invoice (Inv_Number, Cust_Code, Inv_Date, Inv_Total, Inv_Terms, Pay_Made, Emp_Number) VALUES ("' + str(Invoice_ID) + '", "' + str(PaintsMain.currentCustomer) + '", "' + str(datetime.datetime.today().strftime('%Y-%m-%d')) + '", "' + str(PaintsMain.currentPayment) + '", "Norm", "False" , "' + str(PaintsMain.currentEmployee) + '")')
             connection.commit()
-            tkinter.messagebox.showinfo('Order made!', 'Order made, Returning to main menu!')
+            tkinter.messagebox.showinfo('Order made!', 'Order made, Return to menu')
             Return(master)
-
+        """Helps find what invoice numbers habe been used"""
         def getInvoiceNum():
             check_InvNum=cursor.execute('SELECT Inv_Number FROM Invoice')
             i=0
@@ -622,11 +696,11 @@ class PaintsMain:
                     check_InvNum = cursor.execute('SELECT Inv_Number FROM Invoice')
                     i=0
                 return j
-
-        master.geometry("500x600")
+        """Sets the size and establishes the components"""
+        master.geometry("500x700")
         paymentFrame = Frame(master, highlightbackground="red", highlightcolor="red",highlightthickness=1, width=500, height=500)
         paymentFrame.pack()
-        cBalanceLabel = Label(paymentFrame, text="Balance: ")
+        cBalanceLabel = Label(paymentFrame, text="Customer:"+str(PaintsMain.currentCustomer))
         cartLabel= Label(paymentFrame, text="Cart:")
         qtyLabel = Label(paymentFrame, text ="Qty:")
         qty=0
@@ -641,9 +715,9 @@ class PaintsMain:
             productList.insert(int(i),pList.fetchone())
             i=i+1
         cart = Listbox(paymentFrame, bg="darkgray")
-        productList.grid(row=1, sticky=W)
-        cartLabel.grid(row=4, sticky=W)
-        cart.grid(row=5, sticky=W)
+        productList.grid(row=2, sticky=W)
+        cartLabel.grid(row=5, sticky=W)
+        cart.grid(row=6, sticky=W)
         cBalance = Label(paymentFrame, textvariable=currentBalance)
         payment = StringVar()
         paymentEntry = Entry(paymentFrame, textvariable=payment, width=10, bg="darkgray")
@@ -655,30 +729,42 @@ class PaintsMain:
         removeFromCartButton = Button(paymentFrame, text="Remove", bg="gray")
         removeFromCartButton.bind("<Button-1>", removeFromCart)
         master.bind("<Return>", removeFromCart)
-        makePaymentButton = Button(paymentFrame, text="Submit Order", bg="gray")
+        makePaymentButton = Button(paymentFrame, text="Make Payment", bg="gray")
         makePaymentButton.bind("<Button-1>", makePayment)
         master.bind("<Return>", makePayment)
-        paymentLabel = Label(paymentFrame, text="Total Cost: ")
+        paymentLabel = Label(paymentFrame, text="Payment: ")
         PaintsMain.total=0
         v=StringVar()
         v.set(PaintsMain.currentPayment)
+        variable=StringVar(master)
+        variable.set("SKU")
+        options=OptionMenu(paymentFrame,variable,"SKU","BrandID","Type")
+        options.grid(row=0, sticky=W)
+        filterButton = Button(paymentFrame, text="Filter")
+        filterButton.grid(row=1,sticky=W)
+        filterButton.bind("<Button-1>", filter)
+        search=StringVar()
+        filterEntry = Entry(paymentFrame, textvariable=search, width=10, bg="darkgray")
+        filterEntry.grid(row=0,sticky=E)
         paymentTotalLabel = Label(paymentFrame, textvariable=v, bg="gray")
-        addToCartButton.grid(row=3, sticky=W)
-        removeFromCartButton.grid(row=3, sticky=E)
-        qtyLabel.grid(row=2, sticky=W)
-        qtyEntry.grid(row=2, sticky=E)
-        cBalanceLabel.grid(row=6, sticky=W)
-        cBalance.grid(row=7, sticky=E)
-        paymentLabel.grid(row=8, sticky=W)
-        paymentTotalLabel.grid(row=9, sticky=E)
-        paymentDateLabel.grid(row=10, sticky=W)
-        paymentDate.grid(row=11, sticky=E)
-        queryLabel.grid(row=0, sticky=W)
-        makePaymentButton.grid(row=12, padx=5, pady=15)
-
-    """This screen allows employees to search an invoice by number and have it displayed."""
+        addToCartButton.grid(row=4, sticky=W)
+        removeFromCartButton.grid(row=4, sticky=E)
+        qtyLabel.grid(row=3, sticky=W)
+        qtyEntry.grid(row=3, sticky=E)
+        cBalanceLabel.grid(row=7, sticky=W)
+        cBalance.grid(row=8, sticky=E)
+        paymentLabel.grid(row=9, sticky=W)
+        paymentTotalLabel.grid(row=10, sticky=E)
+        paymentDateLabel.grid(row=11, sticky=W)
+        paymentDate.grid(row=12, sticky=E)
+        #queryLabel.grid(row=0, sticky=W)
+        makePaymentButton.grid(row=13, padx=5, pady=15)
+        returnButton = Button(paymentFrame, text="Return")
+        returnButton.bind("<Button-1>", Return)
+        returnButton.grid(row=13, column=1)
+        master.bind("<Escape>", Return)
+    """This screen allows employees to search an invoice by number, customer, or employee and has it displayed."""
     def lookupInvoiceScreen(master):
-
         """Basic return mechanism when escape key is pressed"""
         def Return(event):
             time.sleep(.3)
@@ -689,39 +775,76 @@ class PaintsMain:
 
         """When the lookup invoice button is clicked the value from the field is retrieved and a query is made to the
         invoice table to see if it exists. If it doesnt exist, an error appears, if it does, the generate invoice method
-        is called."""
+        is called. it does this for whatever selected search method is selected"""
         def searchInvoice(event):
-            idValue = str(invoiceID.get())
-            if(idValue == ""):
-                tkinter.messagebox.showerror('Blank Field(s) Error', 'Attention, You must fill the required fields!')
-            else:
-                if (idValue != ""):
-                    cursor.execute('SELECT * FROM Invoice WHERE Inv_Number = "' + idValue + '"')
-                    result = cursor.fetchall()
+            if(variable.get()=="ID"):
+                idValue = str(invoiceID.get())
+                if(idValue == ""):
+                 tkinter.messagebox.showerror('Blank Field(s) Error', 'Attention, You must fill the required fields!')
+                else:
+                    if (idValue != ""):
+                        cursor.execute('SELECT * FROM Invoice WHERE Inv_Number = "' + idValue + '"')
+                        result = cursor.fetchall()
                     if (str(result) == "[]"):
                         tkinter.messagebox.showerror('Incorrect ID', 'Attention, The invoice you\'ve entered was not found!')
                     else:
-                        generateInvoice(result)
+                        generateInvoice(0,result)
+            if (variable.get() == "Customer"):
+                idValue = str(invoiceID.get())
+                if (idValue == ""):
+                    tkinter.messagebox.showerror('Blank Field(s) Error',
+                                                 'Attention, You must fill the required fields!')
+                else:
+                    if (idValue != ""):
+                        cursor.execute('SELECT * FROM Invoice WHERE Cust_Code = "' + idValue + '"')
+                        result = cursor.fetchall()
+                    if (str(result) == "[]"):
+                        tkinter.messagebox.showerror('Incorrect ID',
+                                                     'Attention, The invoice you\'ve entered was not found!')
+                    else:
+                        generateInvoice(0,result)
+            if (variable.get() == "Employee"):
+                idValue = str(invoiceID.get())
+                if (idValue == ""):
+                    tkinter.messagebox.showerror('Blank Field(s) Error',
+                                                 'Attention, You must fill the required fields!')
+                else:
+                    if (idValue != ""):
+                        cursor.execute('SELECT * FROM Invoice WHERE Emp_Number = "' + idValue + '"')
+                        result = cursor.fetchall()
+                    if (str(result) == "[]"):
+                        tkinter.messagebox.showerror('Incorrect ID',
+                                                     'Attention, The invoice you\'ve entered was not found!')
+                    else:
+                            generateInvoice(0,result)
+        """used as event that transfers to generateInvoice"""
+        def generate(event):
+            PaintsMain.g=PaintsMain.g+1
+            generateInvoice(PaintsMain.g, PaintsMain.r)
 
         """When an invoice is found, this method uses the invoicew number to find all relating records from the line table.
         The results are then displayed on a popup screen in a list along with the customer code, invoice number, and 
         invoice total for the current invoice."""
-        def generateInvoice(r):
+        def generateInvoice(g,r):
+            PaintsMain.g=g
+            PaintsMain.r=r
             currentInvoice = Tk()
-            currentInvoice.title('Invoice ' + str(r[0][0]))
+            currentInvoice.title('Invoice ' + str(r[g][0]))
             currentInvoiceFrame = Frame(currentInvoice, bg="gray")
             currentInvoiceFrame.pack(fill=BOTH, expand=YES)
             #invLabel = Label(currentInvoiceFrame, text="Inv #: " + str(r[0][0]), bg="gray", highlightbackground="red", highlightcolor="red", highlightthickness=1)
-            custLabel = Label(currentInvoiceFrame, text="Cust Code: " + str(r[0][1]), bg="gray", highlightbackground="red", highlightcolor="red", highlightthickness=1)
-            empLabel = Label(currentInvoiceFrame, text="Emp #: " + str(r[0][6]), bg="gray", highlightbackground="red", highlightcolor="red", highlightthickness=1)
-            totalLabel = Label(currentInvoiceFrame, text="Total: $" + str(r[0][3]), bg="gray", highlightbackground="red", highlightcolor="red", highlightthickness=1)
+            custLabel = Label(currentInvoiceFrame, text="Cust Code: " + str(r[g][1]), bg="gray", highlightbackground="red", highlightcolor="red", highlightthickness=1)
+            empLabel = Label(currentInvoiceFrame, text="Emp #: " + str(r[g][6]), bg="gray", highlightbackground="red", highlightcolor="red", highlightthickness=1)
+            totalLabel = Label(currentInvoiceFrame, text="Total: $" + str(r[g][3]), bg="gray", highlightbackground="red", highlightcolor="red", highlightthickness=1)
             #invLabel.grid(row=0, column=0)
+            nextInvButton=Button(currentInvoiceFrame, text="Next Invoice")
             custLabel.grid(row=0, column=0)
             empLabel.grid(row=0, column=1)
             totalLabel.grid(row=0, column=2)
-            cursor.execute('SELECT COUNT(*) FROM Line WHERE Inv_Number = "' + str(r[0][0]) + '"')
+
+            cursor.execute('SELECT COUNT(*) FROM Line WHERE Inv_Number = "' + str(r[0]) + '"')
             rownum = cursor.fetchall()
-            iList = cursor.execute('SELECT * FROM Line WHERE Inv_Number = "' + str(r[0][0]) + '"')
+            iList = cursor.execute('SELECT * FROM Line WHERE Inv_Number = "' + str(r[0]) + '"')
             lineList = Listbox(currentInvoiceFrame, height=rownum, bg="darkgray")
             i = 0
             while i < iList.__sizeof__():
@@ -731,25 +854,37 @@ class PaintsMain:
                 i = i + 1
 
             lineList.grid(row=1, columnspan=3, pady=5)
-            currentInvoice.mainloop()
+            print("test1")
+            if len(r)-1>g:
+                print("test")
+                nextInvButton.grid(row=3, column=0)
+                nextInvButton.bind("<Button-1>", generate)
+
+            #currentInvoice.mainloop()
+
+
+        variable = StringVar(master)
+        variable.set("ID")
 
         """Below, the lookup invoice frame is being assembled with the necessary parts. The invoice id is stored in the 
-        @invoiceID variable."""
+                @invoiceID variable."""
         lookupInvoiceFrame = Frame(master, width=300, height=200, bg="gray")
         lookupInvoiceFrame.pack(pady=25)
         lookupInvoiceFrame.pack_propagate(0)
-        lookupLabel = Label(lookupInvoiceFrame, text="Lookup an invoice by invoice number:", bg="gray")
-        invoiceIdLabel = Label(lookupInvoiceFrame, text="Invoice Number:", bg="gray")
+        searchOptions = OptionMenu(lookupInvoiceFrame, variable, "ID", "Customer", "Employee")
+        lookupLabel = Label(lookupInvoiceFrame, text="Lookup an invoice by :", bg="gray")
+        #invoiceIdLabel = Label(lookupInvoiceFrame, text="Invoice Number:", bg="gray")
         invoiceID = StringVar()
         invoiceIdEntry = Entry(lookupInvoiceFrame, textvariable=invoiceID, bg="darkgray")
+
         searchButton = Button(lookupInvoiceFrame, text="Search")
         searchButton.bind("<Button-1>", searchInvoice)
         master.bind("<Return>", searchInvoice)
         lookupLabel.grid(row=0, columnspan=2, pady=10)
-        invoiceIdLabel.grid(row=1, sticky=E)
+        #invoiceIdLabel.grid(row=1, sticky=E)
         invoiceIdEntry.grid(row=1, column=1)
         searchButton.grid(row=2, columnspan=2, pady=10)
-
+        searchOptions.grid(row=1, sticky=E)
 #Creating window and calling PaintsMain class which initialized login window
 root = Tk()
 root.title('Paints R Us')
